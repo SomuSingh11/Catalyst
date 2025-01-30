@@ -1,6 +1,8 @@
 "use client";
 
 import * as React from "react";
+import { useClerk } from "@clerk/nextjs";
+
 import {
   AudioWaveform,
   BookOpen,
@@ -26,7 +28,6 @@ import {
   SidebarRail,
 } from "@/components/ui/sidebar";
 
-// This is sample data.
 const data = {
   user: {
     name: "k4ge",
@@ -199,6 +200,16 @@ const data = {
 };
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+  const { signOut } = useClerk();
+  // const { user } = useUser();
+  // if (!user) return null;
+
+  // const userData = {
+  //   name: user.username || "Guest",
+  //   email: user.emailAddresses[0]?.emailAddress || "No email",
+  //   avatar: user.imageUrl || "/default-avatar.jpg",
+  // };
+
   return (
     <Sidebar collapsible="icon" variant="floating" {...props}>
       <SidebarHeader>
@@ -209,7 +220,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <NavProjects projects={data.projects} />
       </SidebarContent>
       <SidebarFooter>
-        <NavUser user={data.user} />
+        <NavUser user={data.user} signOut={signOut} />
       </SidebarFooter>
       <SidebarRail />
     </Sidebar>
