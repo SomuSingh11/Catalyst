@@ -3,6 +3,9 @@ import { Inter, Source_Code_Pro } from "next/font/google";
 import "./globals.css";
 import { ClerkProvider } from "@clerk/nextjs";
 import { cn } from "@/lib/utils";
+import { SidebarProvider } from "@/components/ui/sidebar";
+import { AppSidebar } from "@/components/app-sidebar";
+import { BreadcrumbHeader } from "@/components/breadcrumb-header";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -13,15 +16,6 @@ const sourceCodePro = Source_Code_Pro({
   variable: "--font-source-code-pro",
   subsets: ["latin"],
 });
-// const geistSans = Geist({
-//   variable: "--font-geist-sans",
-//   subsets: ["latin"],
-// });
-
-// const geistMono = Geist_Mono({
-//   variable: "--font-geist-mono",
-//   subsets: ["latin"],
-// });
 
 export const metadata: Metadata = {
   title: "Catalyst",
@@ -39,10 +33,16 @@ export default function RootLayout({
         <body
           className={cn(
             `${inter.variable} ${sourceCodePro.variable} antialiased`,
-            `min-h-screen pt-16`
+            `min-h-screen flex flex-col`
           )}
         >
-          {children}
+          <SidebarProvider>
+            <AppSidebar />
+            <main className="flex-1 flex flex-col ml-2">
+              <BreadcrumbHeader />
+              {children}
+            </main>
+          </SidebarProvider>
         </body>
       </html>
     </ClerkProvider>
