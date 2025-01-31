@@ -1,7 +1,7 @@
 import {} from "@/components/ui/separator";
 import { SidebarInset } from "@/components/ui/sidebar";
 
-export default function Home() {
+export default function Page() {
   return (
     <div className="w-full flex">
       <SidebarInset>

@@ -1,12 +1,15 @@
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/app-sidebar";
 import { BreadcrumbHeader } from "@/components/breadcrumb-header";
+import { initialProfile } from "@/lib/intital-profile";
 
-const MainLayout = ({ children }: { children: React.ReactNode }) => {
+const MainLayout = async ({ children }: { children: React.ReactNode }) => {
+  const profile = await initialProfile();
+
   return (
     <div className="h-full relative">
       <SidebarProvider>
-        <AppSidebar />
+        <AppSidebar profile={profile} />
         <div className="flex-1 flex flex-col">
           <div className="sticky top-0 z-10">
             <BreadcrumbHeader />

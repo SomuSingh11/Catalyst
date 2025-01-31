@@ -199,7 +199,11 @@ const data = {
   ],
 };
 
-export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+export function AppSidebar({
+  profile,
+  ...props
+}: // eslint-disable-next-line @typescript-eslint/no-explicit-any
+{ profile: any } & React.ComponentProps<typeof Sidebar>) {
   const { signOut } = useClerk();
   // const { user } = useUser();
   // if (!user) return null;
@@ -220,7 +224,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <NavProjects projects={data.projects} />
       </SidebarContent>
       <SidebarFooter>
-        <NavUser user={data.user} signOut={signOut} />
+        <NavUser user={profile} signOut={signOut} />
       </SidebarFooter>
       <SidebarRail />
     </Sidebar>
