@@ -100,20 +100,28 @@ const data = {
       icon: BookOpen,
       items: [
         {
-          title: "Introduction",
-          url: "#",
+          title: "All Questions",
+          url: "/tracker/all-questions",
         },
         {
-          title: "Get Started",
-          url: "#",
+          title: "LeetCode Top Interview 150",
+          url: "/tracker/top-150",
         },
         {
-          title: "Tutorials",
-          url: "#",
+          title: "Grokking Coding Interview Patterns",
+          url: "/tracker/grokking-patterns",
         },
         {
-          title: "Changelog",
-          url: "#",
+          title: "Neetcode",
+          url: "/tracker/neetcode",
+        },
+        {
+          title: "Grind 75",
+          url: "/tracker/grind-75",
+        },
+        {
+          title: "Sean Prashad LeetCode Patterns",
+          url: "/tracker/sean-prasad-patterns",
         },
       ],
     },
@@ -208,14 +216,6 @@ export function AppSidebar({
 }: // eslint-disable-next-line @typescript-eslint/no-explicit-any
 { profile: any } & React.ComponentProps<typeof Sidebar>) {
   const { signOut } = useClerk();
-  // const { user } = useUser();
-  // if (!user) return null;
-
-  // const userData = {
-  //   name: user.username || "Guest",
-  //   email: user.emailAddresses[0]?.emailAddress || "No email",
-  //   avatar: user.imageUrl || "/default-avatar.jpg",
-  // };
 
   return (
     <Sidebar collapsible="icon" variant="floating" {...props}>

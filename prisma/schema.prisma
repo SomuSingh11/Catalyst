@@ -13,14 +13,48 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model Profile {
+model User {
   id String @id @default(uuid())
   userId String @unique
   name String 
   username String @unique
   imageUrl String @db.Text 
   email String @db.Text 
+  progress  UserProgress[]
 
   createAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+model leetcodeQuestion {
+  id                Int     @id @default(autoincrement())
+  name              String
+  questionId        Int @unique
+  difficulty        String
+  tags              String
+  companyTags       String
+  questionURL       String
+  listTags          String
+  questionSlug      String
+  similarQuestions String
+  leetCodePatterns String
+  userProgress     UserProgress[]
+}
+
+model UserProgress {
+  id          String  @id @default(uuid())
+  
+  userId      String 
+  user User  @relation(fields: [userId], references: [id])
+
+  questionId  Int  
+  question leetcodeQuestion @relation(fields: [questionId], references: [id])
+
+  finished    Boolean @default(false) 
+  category    String
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([userId, questionId])
 }

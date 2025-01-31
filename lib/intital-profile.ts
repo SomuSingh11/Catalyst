@@ -9,7 +9,7 @@ export const initialProfile = async () => {
     return null;
   }
 
-  const profile = await prisma.profile.findUnique({
+  const profile = await prisma.user.findUnique({
     where: {
       userId: user.id,
     },
@@ -19,7 +19,7 @@ export const initialProfile = async () => {
     return profile;
   }
 
-  const newProfile = await prisma.profile.create({
+  const newProfile = await prisma.user.create({
     data: {
       userId: user.id,
       name: `${user.firstName} ${user.lastName ? user.lastName : ""}`,
