@@ -14,7 +14,7 @@ const MainLayout = async ({ children }: { children: React.ReactNode }) => {
           <div className="sticky top-0 z-10">
             <BreadcrumbHeader />
           </div>
-          <main className="mt-4 pl-5">{children}</main>{" "}
+          <main className="pl-5">{children}</main>{" "}
         </div>
       </SidebarProvider>
     </div>

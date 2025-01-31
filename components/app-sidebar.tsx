@@ -36,16 +36,19 @@ const data = {
   },
   teams: [
     {
+      id: 1,
       name: "Catalyst",
       logo: GalleryVerticalEnd,
       plan: "Enterprise",
     },
     {
+      id: 2,
       name: "Catalyst",
       logo: AudioWaveform,
       plan: "Startup",
     },
     {
+      id: 3,
       name: "Catalyst",
       logo: Command,
       plan: "Free",
