@@ -11,6 +11,7 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import React from "react";
+import { ThemeToggle } from "./theme-toggle";
 
 export function BreadcrumbHeader() {
   const pathname = usePathname(); // Get the current path
@@ -63,6 +64,9 @@ export function BreadcrumbHeader() {
             ))}
           </BreadcrumbList>
         </Breadcrumb>
+      </div>
+      <div className="ml-auto mr-5">
+        <ThemeToggle />
       </div>
     </header>
   );

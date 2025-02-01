@@ -18,7 +18,6 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar";
-import { ThemeToggle } from "./theme-toggle";
 
 export function TeamSwitcher({
   teams,
@@ -54,9 +53,6 @@ export function TeamSwitcher({
                 </div>
               </SidebarMenuButton>
             </DropdownMenuTrigger>
-            <div onClick={(e) => e.stopPropagation()}>
-              <ThemeToggle />
-            </div>
           </div>
           <DropdownMenuContent
             className="w-[--radix-dropdown-menu-trigger-width] min-w-56 rounded-lg"
