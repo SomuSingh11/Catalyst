@@ -1,7 +1,5 @@
 "use client";
 
-import LeetCodeTable from "@/components/Tracker/table-all-questions";
-
 export default function Page() {
   return (
     <div className="p-4  rounded-lg">
