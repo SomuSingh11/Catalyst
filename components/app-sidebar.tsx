@@ -116,8 +116,8 @@ const data = {
           url: "/tracker/neetcode",
         },
         {
-          title: "Grind 75",
-          url: "/tracker/grind-75",
+          title: "Track Profile",
+          url: "/tracker/track-profile",
         },
         {
           title: "Sean Prashad LeetCode Patterns",
