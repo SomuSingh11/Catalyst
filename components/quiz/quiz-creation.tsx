@@ -132,14 +132,14 @@ export default function QuizCreation() {
         </CardContent>
         <BorderBeam
           duration={6}
-          size={400}
-          className="from-transparent via-red-500 to-transparent"
+          size={250}
+          className="from-transparent via-red-500 dark:via-red-200 to-transparent"
         />
         <BorderBeam
           duration={6}
           delay={3}
-          size={400}
-          className="from-transparent via-blue-500 to-transparent"
+          size={250}
+          className="from-transparent via-blue-500 dark:via-blue-200 to-transparent"
         />
       </Card>
     </div>

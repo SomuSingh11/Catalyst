@@ -14,16 +14,18 @@ datasource db {
 }
 
 model User {
-  id String @id @default(uuid())
-  userId String @unique
-  name String 
-  username String @unique
-  imageUrl String @db.Text 
-  email String @db.Text 
-  progress  UserProgress[]
+  id          String  @id @default(uuid())
+  userId      String  @unique //clerk id
+  name        String 
+  username    String  @unique
+  imageUrl    String  @db.Text 
+  email       String  @db.Text 
 
-  createAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  progress    UserProgress[]
+  quizzy      Quizzy[]
+
+  createAt    DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }
 
 model leetcodeQuestion {
@@ -36,8 +38,9 @@ model leetcodeQuestion {
   questionURL       String
   listTags          String
   questionSlug      String
-  similarQuestions String
-  leetCodePatterns String
+  similarQuestions  String
+  leetCodePatterns  String
+
   userProgress     UserProgress[]
 }
 
@@ -45,10 +48,10 @@ model UserProgress {
   id          String  @id @default(uuid())
   
   userId      String 
-  user User  @relation(fields: [userId], references: [id])
+  user        User    @relation(fields: [userId], references: [id])
 
   questionId  Int  
-  question leetcodeQuestion @relation(fields: [questionId], references: [id])
+  question    leetcodeQuestion @relation(fields: [questionId], references: [id])
 
   finished    Boolean @default(false) 
   category    String
@@ -57,4 +60,42 @@ model UserProgress {
   updatedAt   DateTime @updatedAt
 
   @@unique([userId, questionId])
+}
+
+enum GameType {
+  mcq
+  open_ended
+}
+
+model Quizzy {
+  id             String    @id @default(uuid())
+
+  userId         String
+  user           User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  gameType       GameType
+  topic          String
+  timeStarted    DateTime
+  timeEnded      DateTime?
+
+  quizzyQuestions QuizzyQuestion[]
+
+  @@index([userId], name:"userId")
+}
+
+model QuizzyQuestion{
+  id                    String    @id @default(uuid())
+
+  quizzyId              String
+  quizzy                Quizzy   @relation(fields: [quizzyId], references: [id], onDelete: Cascade)
+
+  question              String
+  answer                String
+  idCorrect             Boolean?   //for mcq questions
+  options               Json?      //for mcq questions
+  percentageCorrect     Float?     //for open ended questions
+  questionType          GameType
+  userAnswer            String?    //for mcq questions
+
+  @@index([quizzyId], name:"quizzyId")
 }
