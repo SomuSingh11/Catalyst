@@ -3,7 +3,7 @@ import { Activity, BrainCircuitIcon, Coffee } from "lucide-react";
 
 import { Calendar } from "@/components/ui/calendar";
 import { cn } from "@/lib/utils";
-import AnimatedBeamMultipleOutputDemo from "@/components/quiz/components/animated-beam-multiple-output";
+import HotTopicsCloud from "@/components/quiz/components/hot-topic-cloud";
 import AnimatedList from "@/components/quiz/components/animated-list-demo";
 import { BentoCard, BentoGrid } from "@/components/magicui/bento-grid";
 import { Marquee } from "@/components/magicui/marquee";
@@ -36,7 +36,7 @@ const features = [
     Icon: BrainCircuitIcon,
     name: "Brain Gym Time!",
     description: "Flex those mental muscles with Quizzy.",
-    href: "#",
+    href: "/quizzy/quiz",
     cta: "Start a Quiz",
     className: "col-span-3 lg:col-span-1",
     background: (
@@ -86,7 +86,7 @@ const features = [
     cta: "Learn more",
     className: "col-span-3 lg:col-span-2",
     background: (
-      <AnimatedBeamMultipleOutputDemo className="absolute right-2 top-4 h-[300px] border-none transition-all duration-300 ease-out [mask-image:linear-gradient(to_top,transparent_10%,#000_100%)] group-hover:scale-105" />
+      <HotTopicsCloud className="absolute right-0 top-4 h-[300px] border-none transition-all duration-300 ease-out [mask-image:linear-gradient(to_top,transparent_0%,#000_100%)] group-hover:scale-105" />
     ),
   },
   {
