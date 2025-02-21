@@ -25,14 +25,36 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+import { useMutation } from "@tanstack/react-query";
+
 import { Input } from "@/components/ui/input";
 import { BookOpen, CopyCheck } from "lucide-react";
 import { Separator } from "../ui/separator";
 import { BorderBeam } from "../magicui/border-beam";
+import axios from "axios";
+import { useRouter } from "next/navigation";
 
 type Input = z.infer<typeof quizCreationSchema>;
 
 export default function QuizCreation() {
+  const router = useRouter();
+  // Function that executes the mutation
+  const createQuiz = async ({ amount, topic, type }: Input) => {
+    const response = await axios.post(
+      `${process.env.NEXT_PUBLIC_API_URL}/api/quizzy/create-quiz`,
+      {
+        amount,
+        topic,
+        type,
+      }
+    );
+    return response.data;
+  };
+
+  const { mutate: getQuestions } = useMutation({
+    mutationFn: createQuiz,
+  });
+
   const form = useForm<Input>({
     resolver: zodResolver(quizCreationSchema),
     defaultValues: {
@@ -43,8 +65,22 @@ export default function QuizCreation() {
   });
 
   function onSubmit(values: Input) {
-    alert(JSON.stringify(values, null, 2));
-    console.log(values);
+    getQuestions(
+      {
+        amount: values.amount,
+        topic: values.topic,
+        type: values.type,
+      },
+      {
+        onSuccess: ({ quizzyId }) => {
+          if (form.getValues("type") == "open_ended") {
+            router.push(`/play/open-ended/${quizzyId}`);
+          } else {
+            router.push(`/play/mcq/${quizzyId}`);
+          }
+        },
+      }
+    );
   }
 
   form.watch();
@@ -132,13 +168,13 @@ export default function QuizCreation() {
         </CardContent>
         <BorderBeam
           duration={6}
-          size={250}
+          size={100}
           className="from-transparent via-red-500 dark:via-red-200 to-transparent"
         />
         <BorderBeam
           duration={6}
           delay={3}
-          size={250}
+          size={100}
           className="from-transparent via-blue-500 dark:via-blue-200 to-transparent"
         />
       </Card>

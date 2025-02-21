@@ -1,8 +1,6 @@
-import { BentoDemo } from "@/components/quiz/dashboard";
+"use client";
 
-export const metadata = {
-  title: "Quizzy",
-};
+import { BentoDemo } from "@/components/quiz/dashboard";
 
 export default function QuizPage() {
   return (

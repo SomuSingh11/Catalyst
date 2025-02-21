@@ -4,12 +4,6 @@ import { quizCreationSchema } from "@/schemas/form/quiz";
 import { NextResponse } from "next/server";
 import { ZodError } from "zod";
 
-export async function GET(req: Request, res: Response) {
-  return NextResponse.json({
-    hello: "world",
-  });
-}
-
 export async function POST(req: Request, res: Response) {
   try {
     const body = await req.json();

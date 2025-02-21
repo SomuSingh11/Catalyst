@@ -1,3 +1,7 @@
+export const metadata = {
+  title: "Quizzy",
+};
+
 const QuizLayout = async ({ children }: { children: React.ReactNode }) => {
   return (
     <div>
