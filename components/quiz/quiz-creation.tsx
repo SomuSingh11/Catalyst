@@ -74,9 +74,9 @@ export default function QuizCreation() {
       {
         onSuccess: ({ quizzyId }) => {
           if (form.getValues("type") == "open_ended") {
-            router.push(`/play/open-ended/${quizzyId}`);
+            router.push(`/quizzy/quiz/open-ended/${quizzyId}`);
           } else {
-            router.push(`/play/mcq/${quizzyId}`);
+            router.push(`/quizzy/quiz/mcq/${quizzyId}`);
           }
         },
       }

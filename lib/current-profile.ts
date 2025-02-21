@@ -1,11 +1,12 @@
 import { auth } from "@clerk/nextjs/server";
 import prisma from "@/lib/db";
+import { redirect } from "next/navigation";
 
 export const currentProfile = async () => {
   const { userId } = await auth();
 
   if (!userId) {
-    return null;
+    redirect("/sign-in");
   }
 
   const profile = await prisma.user.findUnique({
