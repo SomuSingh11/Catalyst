@@ -91,7 +91,7 @@ model QuizzyQuestion{
 
   question              String
   answer                String
-  idCorrect             Boolean?   //for mcq questions
+  isCorrect             Boolean?   //for mcq questions
   options               Json?      //for mcq questions
   percentageCorrect     Float?     //for open ended questions
   questionType          GameType
