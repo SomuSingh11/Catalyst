@@ -2,9 +2,17 @@
 
 import React from "react";
 import { Quizzy, QuizzyQuestion } from "@prisma/client";
-import { ChevronRight, Timer } from "lucide-react";
+import { BarChart, Check, ChevronRight, Loader2, Timer } from "lucide-react";
 import { Card, CardDescription, CardHeader, CardTitle } from "../ui/card";
-import { Button } from "../ui/button";
+import { Button, buttonVariants } from "../ui/button";
+import { useMutation } from "@tanstack/react-query";
+import axios from "axios";
+import { z } from "zod";
+import { checkAnswerSchema } from "@/schemas/form/quiz";
+
+import { toast } from "sonner";
+import Link from "next/link";
+import { cn } from "@/lib/utils";
 
 interface MCQProps {
   quiz: Quizzy & {
@@ -15,6 +23,58 @@ interface MCQProps {
 export default function MCQ({ quiz }: MCQProps) {
   const [questionIndex, setQuestionIndex] = React.useState(0);
   const [selectedOption, setSelectedOption] = React.useState<number>(-1);
+  const [correctAnswers, setCorrectAnswers] = React.useState<number>(0);
+  const [wrongAnswers, setWrongAnswers] = React.useState<number>(0);
+  const [hasEnded, setHasEnded] = React.useState<boolean>(false);
+  
+  const {mutate: checkAnswer, isPending: isChecking} = useMutation({
+    mutationFn: async () => {
+      const payload : z.infer<typeof checkAnswerSchema> = {
+        questionId: currentQuestion.id,
+        userAnswer: options[selectedOption]
+      };
+      const response = await axios.post("/api/quizzy/checkAnswer", payload);
+      return response.data;
+    }
+  })
+
+  const handleNext = React.useCallback(() => {
+    checkAnswer(undefined, {
+      onSuccess: ({isCorrect}) => {
+        // toast("Answer checked", {
+        //   description: <Check />
+        // })
+          if(isCorrect) {
+            setCorrectAnswers((prev) => prev + 1);
+          } else {
+            setWrongAnswers((prev) => prev + 1);
+          }
+          
+          if(questionIndex === quiz.quizzyQuestions.length - 1) setHasEnded(true);
+          setQuestionIndex((prev) => prev + 1);
+          setSelectedOption(-1);
+      }
+    })
+  }, [checkAnswer, questionIndex, quiz.quizzyQuestions.length]);
+
+  React.useEffect(() => {
+    const handleKeyEvent = (e: KeyboardEvent) => {
+      if(e.key === "1") {
+        setSelectedOption(0);
+      } else if(e.key === "2") {
+        setSelectedOption(1);
+      } else if(e.key === "3") {
+        setSelectedOption(2);
+      } else if(e.key === "4") {
+        setSelectedOption(3);
+      } else if(e.key === "Enter") {
+        handleNext();
+      }
+    }
+
+      document.addEventListener("keydown", handleKeyEvent);
+      return ()=>{document.removeEventListener("keydown", handleKeyEvent)}
+  }, [handleNext]);
 
   const currentQuestion = React.useMemo(() => {
     return quiz.quizzyQuestions[questionIndex];   
@@ -26,6 +86,45 @@ export default function MCQ({ quiz }: MCQProps) {
 
     return JSON.parse(currentQuestion.options as string) as string[];
   }, [currentQuestion]);
+
+  if(hasEnded) {
+    return (
+      <div className="flex flex-col items-center justify-center md:w-[80vw] max-w-2xl w-[90vw] gap-4">
+        <div className="w-full p-8 rounded-lg bg-green-500/10 dark:bg-green-500/5 border border-green-500/20 flex flex-col items-center gap-4">
+          <h2 className="text-2xl font-bold text-green-600 dark:text-green-400">Quiz Completed!</h2>
+          <div className="text-xl text-foreground">
+            Time taken: <span className="font-semibold">{"3m 4s"}</span>
+          </div>
+          <div className="flex gap-8 items-center justify-center w-full">
+            <div className="text-center">
+              <p className="text-3xl font-bold text-green-600 dark:text-green-400">{correctAnswers}</p>
+              <p className="text-sm text-muted-foreground">Correct</p>
+            </div>
+            <div className="text-center">
+              <p className="text-3xl font-bold text-red-600 dark:text-red-400">{wrongAnswers}</p>
+              <p className="text-sm text-muted-foreground">Wrong</p>
+            </div>
+          </div>
+          <div className="flex gap-2">
+            <Link
+              href="/quizzy"
+              className={cn(buttonVariants({ variant: "outline" }), "mt-2")}
+            >
+              Back to Quizzes
+            </Link>
+            <Link
+              href={`/quizzy/statistics/${quiz.id}`}
+              className={cn(buttonVariants(), "mt-2")}
+            >
+              View Statistics
+              <BarChart className="ml-2 h-4 w-4" />
+            </Link>
+          </div>  
+        </div>
+    
+      </div>
+    )
+  }
 
   return (
     <div className="flex flex-col md:w-[80vw] max-w-2xl w-[90vw]">
@@ -80,9 +179,22 @@ export default function MCQ({ quiz }: MCQProps) {
           );
         })} 
         
-        <Button className="mt-2 ml-auto">
-          <span className="p-1">Next</span>
-          <ChevronRight className="w-6 h-6"/>
+        <Button 
+          className="mt-2 ml-auto"
+          onClick={handleNext}
+          disabled={selectedOption == -1 || isChecking}
+          >
+            {isChecking ? (
+              <div className="flex items-center gap-2">
+                <Loader2 className="h-4 w-4 animate-spin"/>
+                <span>Submitting...</span>
+              </div>
+            ) : (
+              <div className="flex items-center gap-2">
+                <span>Next</span>
+                <ChevronRight className="h-4 w-4"/>
+              </div>
+            )}
         </Button>
         
       </div>

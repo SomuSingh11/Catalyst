@@ -51,7 +51,7 @@ export default function QuizCreation() {
     return response.data;
   };
 
-  const { mutate: getQuestions } = useMutation({
+  const { mutate: getQuestions, isPending: isChecking } = useMutation({
     mutationFn: createQuiz,
   });
 
@@ -162,7 +162,10 @@ export default function QuizCreation() {
                   Open Ended
                 </Button>
               </div>
-              <Button type="submit">Submit</Button>
+              <Button 
+                type="submit"
+                disabled={isChecking}
+                >Submit</Button>
             </form>
           </Form>
         </CardContent>

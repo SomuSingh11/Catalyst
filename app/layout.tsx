@@ -4,6 +4,7 @@ import "./globals.css";
 import { ClerkProvider } from "@clerk/nextjs";
 import { cn } from "@/lib/utils";
 import Providers from "@/Providers/Providers";
+import { Toaster } from "@/components/ui/sonner";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -36,7 +37,10 @@ export default function RootLayout({
             `min-h-screen flex flex-col`
           )}
         >
-          <Providers>{children}</Providers>
+          <Providers>
+            {children}
+            <Toaster />
+            </Providers>
         </body>
       </html>
     </ClerkProvider>
