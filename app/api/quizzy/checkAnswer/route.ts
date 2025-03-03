@@ -2,6 +2,7 @@ import prisma from "@/lib/db";
 import { checkAnswerSchema } from "@/schemas/form/quiz";
 import { NextResponse } from "next/server";
 import { ZodError } from "zod";
+import { compareTwoStrings } from "string-similarity"
 
 
 export async function POST(req : Request, res : Response){
@@ -51,6 +52,24 @@ try {
         return NextResponse.json({
             message: "Answer submitted successfully",
             isCorrectAnswer: isCorrectAnswer,
+        }, {
+            status: 200
+        })
+    } else if (question.questionType === "open_ended"){
+        let percentageCorrect = compareTwoStrings(question.answer.toLocaleLowerCase().trim(), userAnswer.toLocaleLowerCase().trim());
+        percentageCorrect = Math.round(percentageCorrect * 100);
+
+        await prisma.quizzyQuestion.update({
+            where: {
+                id: questionId
+            },
+            data: {
+                percentageCorrect: percentageCorrect
+            }
+        })
+        return NextResponse.json({
+            message: "Answer submitted successfully",
+            percentageCorrect: percentageCorrect
         }, {
             status: 200
         })
