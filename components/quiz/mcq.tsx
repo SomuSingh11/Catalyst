@@ -9,10 +9,11 @@ import { useMutation } from "@tanstack/react-query";
 import axios from "axios";
 import { z } from "zod";
 import { checkAnswerSchema } from "@/schemas/form/quiz";
+import { differenceInSeconds } from "date-fns";
 
 import { toast } from "sonner";
 import Link from "next/link";
-import { cn } from "@/lib/utils";
+import { cn, formatTimeDelta } from "@/lib/utils";
 
 interface MCQProps {
   quiz: Quizzy & {
@@ -26,6 +27,17 @@ export default function MCQ({ quiz }: MCQProps) {
   const [correctAnswers, setCorrectAnswers] = React.useState<number>(0);
   const [wrongAnswers, setWrongAnswers] = React.useState<number>(0);
   const [hasEnded, setHasEnded] = React.useState<boolean>(false);
+  const [now, setNow] = React.useState(new Date());
+
+  React.useEffect(()=>{
+    const interval = setInterval(() => {
+      if(!hasEnded) setNow(new Date());
+    }, 1000)
+
+    return ()=>{
+      clearInterval(interval)
+    }
+  }, [])
   
   const {mutate: checkAnswer, isPending: isChecking} = useMutation({
     mutationFn: async () => {
@@ -93,7 +105,7 @@ export default function MCQ({ quiz }: MCQProps) {
         <div className="w-full p-8 rounded-lg bg-green-500/10 dark:bg-green-500/5 border border-green-500/20 flex flex-col items-center gap-4">
           <h2 className="text-2xl font-bold text-green-600 dark:text-green-400">Quiz Completed!</h2>
           <div className="text-xl text-foreground">
-            Time taken: <span className="font-semibold">{"3m 4s"}</span>
+            Time taken: <span className="font-semibold">{formatTimeDelta(differenceInSeconds(now , quiz.timeStarted))}</span>
           </div>
           <div className="flex gap-8 items-center justify-center w-full">
             <div className="text-center">
@@ -121,7 +133,6 @@ export default function MCQ({ quiz }: MCQProps) {
             </Link>
           </div>  
         </div>
-    
       </div>
     )
   }
@@ -138,8 +149,8 @@ export default function MCQ({ quiz }: MCQProps) {
         </div>
 
         <div className="flex self-start text-slate-400">
-          <Timer className="mr-2" />
-          <span>00:00</span>
+          <Timer className="mr-2 -mt-0.5" />
+          <span>{formatTimeDelta(differenceInSeconds(now , quiz.timeStarted))}</span>
         </div>
 
         {/* Counter here */}
