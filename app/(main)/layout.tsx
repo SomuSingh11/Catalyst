@@ -12,7 +12,7 @@ const MainLayout = async ({ children }: { children: React.ReactNode }) => {
       <SidebarProvider>
         <AppSidebar profile={profile} />
         <div className="flex-1 flex flex-col">
-          <div className="sticky w-full top-0 z-10 bg-sidebar rounded-xl backdrop-blur-md pt-2 shadow-md">
+          <div className="sticky w-full top-0 z-10 bg-sidebar rounded-xl backdrop-blur-md py-2 min-h-[3rem] shadow-md">
             <BreadcrumbHeader />
           </div>
           <main className="h-full w-full overflow-hidden ">{children}</main>{" "}

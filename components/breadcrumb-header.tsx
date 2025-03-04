@@ -26,12 +26,17 @@ export function BreadcrumbHeader() {
     ...pathSegments.map((segment, index) => {
       const href = `/${pathSegments.slice(0, index + 1).join("/")}`; // Generate href for each segment
 
+      // Skip numeric IDs or specific segments
+      if (segment.match(/^[0-9a-fA-F-]+$/)) {
+        return null;
+      }
+      
       // Capitalize the first letter of each segment (no need to capitalize the entire string)
       const segmentName =
         segment.replace(/-/g, " ").charAt(0).toUpperCase() + segment.slice(1);
 
       return { href, label: segmentName };
-    }),
+    }).filter(Boolean), // Filter out null values,
   ];
 
   const handleBreadcrumbClick = (href: string) => {
@@ -52,10 +57,10 @@ export function BreadcrumbHeader() {
                 <BreadcrumbItem>
                   <BreadcrumbLink
                     role="button"
-                    onClick={() => handleBreadcrumbClick(item.href)} // Handle click for redirect
+                    onClick={() => item?.href && handleBreadcrumbClick(item.href)} // Handle click for redirect
                     style={{ cursor: "pointer" }} // Add cursor pointer to indicate it's clickable
                   >
-                    {item.label}
+                    {item?.label}
                   </BreadcrumbLink>
                 </BreadcrumbItem>
 

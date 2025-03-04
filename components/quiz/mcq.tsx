@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { Quizzy, QuizzyQuestion } from "@prisma/client";
+  import { Quizzy, QuizzyQuestion } from "@prisma/client";
 import { BarChart, Check, ChevronRight, Loader2, Timer } from "lucide-react";
 import { Card, CardDescription, CardHeader, CardTitle } from "../ui/card";
 import { Button, buttonVariants } from "../ui/button";
@@ -37,7 +37,7 @@ export default function MCQ({ quiz }: MCQProps) {
     return ()=>{
       clearInterval(interval)
     }
-  }, [])
+  }, [hasEnded])
   
   const {mutate: checkAnswer, isPending: isChecking} = useMutation({
     mutationFn: async () => {
