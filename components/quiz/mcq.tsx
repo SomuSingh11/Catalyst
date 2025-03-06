@@ -38,7 +38,6 @@ export default function MCQ({ quiz }: MCQProps) {
       clearInterval(interval)
     }
   }, [hasEnded])
-  
   const {mutate: checkAnswer, isPending: isChecking} = useMutation({
     mutationFn: async () => {
       const payload : z.infer<typeof checkAnswerSchema> = {
@@ -49,26 +48,27 @@ export default function MCQ({ quiz }: MCQProps) {
       return response.data;
     }
   })
-
+  
   const handleNext = React.useCallback(() => {
     checkAnswer(undefined, {
       onSuccess: ({isCorrect}) => {
-        // toast("Answer checked", {
-        //   description: <Check />
-        // })
           if(isCorrect) {
             setCorrectAnswers((prev) => prev + 1);
+            toast.success("Correct answer!");
           } else {
             setWrongAnswers((prev) => prev + 1);
+            toast.error("Wrong answer!");
           }
           
-          if(questionIndex === quiz.quizzyQuestions.length - 1) setHasEnded(true);
-          setQuestionIndex((prev) => prev + 1);
-          setSelectedOption(-1);
+          if(questionIndex === quiz.quizzyQuestions.length - 1) {
+            setHasEnded(true);
+          } else {
+            setQuestionIndex((prev) => prev + 1);
+            setSelectedOption(-1);
+          }
       }
     })
   }, [checkAnswer, questionIndex, quiz.quizzyQuestions.length]);
-
   React.useEffect(() => {
     const handleKeyEvent = (e: KeyboardEvent) => {
       if(e.key === "1") {

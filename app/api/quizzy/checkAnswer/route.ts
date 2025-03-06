@@ -39,19 +39,19 @@ try {
     })
 
     if(question.questionType === "mcq"){
-        const isCorrectAnswer = question.answer.toLocaleLowerCase().trim() === userAnswer.toLocaleLowerCase().trim();
+        const isCorrect = question.answer.toLocaleLowerCase().trim() === userAnswer.toLocaleLowerCase().trim();
         await prisma?.quizzyQuestion.update({
             where: {
                 id: questionId,
             },
             data:{
-                isCorrect: isCorrectAnswer
+                isCorrect: isCorrect
             }
         })
 
         return NextResponse.json({
             message: "Answer submitted successfully",
-            isCorrectAnswer: isCorrectAnswer,
+            isCorrect: isCorrect,
         }, {
             status: 200
         })
