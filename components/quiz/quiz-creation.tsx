@@ -28,7 +28,7 @@ import {
 import { useMutation } from "@tanstack/react-query";
 
 import { Input } from "@/components/ui/input";
-import { BookOpen, CopyCheck } from "lucide-react";
+import { BookOpen, CopyCheck, Loader2, Send } from "lucide-react";
 import { Separator } from "../ui/separator";
 import { BorderBeam } from "../magicui/border-beam";
 import axios from "axios";
@@ -165,7 +165,19 @@ export default function QuizCreation() {
               <Button 
                 type="submit"
                 disabled={isChecking}
-                >Submit</Button>
+                >
+                  {isChecking ? (
+                  <div className="flex items-center gap-2">
+                    <Loader2 className="h-4 w-4 animate-spin"/>
+                    <span>Fetching questions!...</span>
+                  </div>
+                  ) : (
+                  <div className="flex items-center gap-2">
+                    <span>Submit</span>
+                    <Send className="h-3 w-3"/>
+                  </div>
+                )}
+              </Button>
             </form>
           </Form>
         </CardContent>

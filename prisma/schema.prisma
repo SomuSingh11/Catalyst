@@ -1,9 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -14,88 +8,76 @@ datasource db {
 }
 
 model User {
-  id          String  @id @default(uuid())
-  userId      String  @unique //clerk id
-  name        String 
-  username    String  @unique
-  imageUrl    String  @db.Text 
-  email       String  @db.Text 
-
-  progress    UserProgress[]
-  quizzy      Quizzy[]
-
-  createAt    DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id        String         @id @default(uuid()) // Use this for relationships
+  userId    String         @unique // Keep this for Clerk auth only
+  name      String
+  username  String         @unique
+  imageUrl  String
+  email     String
+  createAt  DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+  quizzy    Quizzy[]
+  progress  UserProgress[]
 }
 
 model leetcodeQuestion {
-  id                Int     @id @default(autoincrement())
-  name              String
-  questionId        Int @unique
-  difficulty        String
-  tags              String
-  companyTags       String
-  questionURL       String
-  listTags          String
-  questionSlug      String
-  similarQuestions  String
-  leetCodePatterns  String
-
+  id               Int            @id @default(autoincrement())
+  name             String
+  questionId       Int            @unique
+  difficulty       String
+  tags             String
+  companyTags      String
+  questionURL      String
+  listTags         String
+  questionSlug     String
+  similarQuestions String
+  leetCodePatterns String
   userProgress     UserProgress[]
 }
 
 model UserProgress {
-  id          String  @id @default(uuid())
-  
-  userId      String 
-  user        User    @relation(fields: [userId], references: [id])
-
-  questionId  Int  
-  question    leetcodeQuestion @relation(fields: [questionId], references: [id])
-
-  finished    Boolean @default(false) 
-  category    String
-
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id         String           @id @default(uuid())
+  userId     String
+  questionId Int
+  finished   Boolean          @default(false)
+  category   String
+  createdAt  DateTime         @default(now())
+  updatedAt  DateTime         @updatedAt
+  question   leetcodeQuestion @relation(fields: [questionId], references: [id])
+  user       User             @relation(fields: [userId], references: [id])
 
   @@unique([userId, questionId])
+}
+
+model Quizzy {
+  id              String           @id @default(uuid())
+  userId          String
+  gameType        GameType
+  topic           String
+  timeStarted     DateTime
+  timeEnded       DateTime?
+  user            User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  quizzyQuestions QuizzyQuestion[]
+
+  @@index([userId], map: "userId")
+}
+
+model QuizzyQuestion {
+  id                String   @id @default(uuid())
+  quizzyId          String
+  question          String
+  answer            String
+  options           Json?
+  percentageCorrect Float?
+  questionType      GameType
+  userAnswer        String?
+  isCorrect         Boolean?
+  quizzy            Quizzy   @relation(fields: [quizzyId], references: [id], onDelete: Cascade)
+
+  @@index([quizzyId], map: "quizzyId")
 }
 
 enum GameType {
   mcq
   open_ended
-}
-
-model Quizzy {
-  id             String    @id @default(uuid())
-
-  userId         String
-  user           User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  gameType       GameType
-  topic          String
-  timeStarted    DateTime
-  timeEnded      DateTime?
-
-  quizzyQuestions QuizzyQuestion[]
-
-  @@index([userId], name:"userId")
-}
-
-model QuizzyQuestion{
-  id                    String    @id @default(uuid())
-
-  quizzyId              String
-  quizzy                Quizzy   @relation(fields: [quizzyId], references: [id], onDelete: Cascade)
-
-  question              String
-  answer                String
-  isCorrect             Boolean?   //for mcq questions
-  options               Json?      //for mcq questions
-  percentageCorrect     Float?     //for open ended questions
-  questionType          GameType
-  userAnswer            String?    //for mcq questions
-
-  @@index([quizzyId], name:"quizzyId")
 }
