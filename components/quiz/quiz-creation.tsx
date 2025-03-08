@@ -33,11 +33,14 @@ import { Separator } from "../ui/separator";
 import { BorderBeam } from "../magicui/border-beam";
 import axios from "axios";
 import { useRouter } from "next/navigation";
+import LoadingQuestions from "./loading-questions";
 
 type Input = z.infer<typeof quizCreationSchema>;
 
 export default function QuizCreation() {
   const router = useRouter();
+  const [showLoader, setShowLoader] = React.useState<boolean>(false);
+  const [finished, setFinished] = React.useState<boolean>(false);
   // Function that executes the mutation
   const createQuiz = async ({ amount, topic, type }: Input) => {
     const response = await axios.post(
@@ -65,6 +68,7 @@ export default function QuizCreation() {
   });
 
   function onSubmit(values: Input) {
+    setShowLoader(true);
     getQuestions(
       {
         amount: values.amount,
@@ -73,17 +77,28 @@ export default function QuizCreation() {
       },
       {
         onSuccess: ({ quizzyId }) => {
-          if (form.getValues("type") == "open_ended") {
-            router.push(`/quizzy/quiz/open-ended/${quizzyId}`);
-          } else {
-            router.push(`/quizzy/quiz/mcq/${quizzyId}`);
-          }
+          setFinished(true);
+          setTimeout(() => {
+            if (form.getValues("type") == "open_ended") {
+              router.push(`/quizzy/quiz/open-ended/${quizzyId}`);
+            } else {
+              router.push(`/quizzy/quiz/mcq/${quizzyId}`);
+            }
+          }, 1000)
+        },
+        onError: (error) => {
+          setShowLoader(false);
+          console.log(error);
         },
       }
     );
   }
 
   form.watch();
+
+  if(showLoader) {
+    return <LoadingQuestions finished={finished}/>
+  }
 
   return (
     <div>

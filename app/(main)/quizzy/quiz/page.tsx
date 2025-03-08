@@ -7,7 +7,7 @@ export const metadata = {
 
 function Page() {
   return (
-    <div>
+    <div className="md:mt-64 mt-16">
       <QuizCreation />
     </div>
   );

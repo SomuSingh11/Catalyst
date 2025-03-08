@@ -42,7 +42,7 @@ const QuestionList = ({questions}: QuestionListProps) => {
                         )}
 
                         {quizType === "open_ended" && (
-                            <TableCell>{question.userAnswer}%</TableCell>
+                            <TableCell>{question.userAnswer}</TableCell>
                         )}
                         {quizType === "open_ended" && (
                             <TableCell className='text-right'>{question.percentageCorrect}%</TableCell>
@@ -100,7 +100,7 @@ const QuestionList = ({questions}: QuestionListProps) => {
                             )}
     
                             {quizType === "open_ended" && (
-                                <TableCell>{question.userAnswer}%</TableCell>
+                                <TableCell>{question.userAnswer}</TableCell>
                             )}
                             {quizType === "open_ended" && (
                                 <TableCell className='text-right'>{question.percentageCorrect}%</TableCell>
