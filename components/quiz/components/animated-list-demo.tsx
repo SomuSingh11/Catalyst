@@ -111,7 +111,7 @@ export default function AnimatedListDemo({
       className
     )}>
       <AnimatedList>
-        {historyNotifications.map((item, idx) => (
+        {historyNotifications.reverse().map((item, idx) => (
           <Notification {...item} key={idx} />
         ))}
       </AnimatedList>

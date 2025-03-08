@@ -8,7 +8,7 @@ import { Button, buttonVariants } from "../ui/button";
 import { useMutation } from "@tanstack/react-query";
 import axios from "axios";
 import { z } from "zod";
-import { checkAnswerSchema } from "@/schemas/form/quiz";
+import { checkAnswerSchema, endGameSchema } from "@/schemas/form/quiz";
 import { differenceInSeconds } from "date-fns";
 
 import { toast } from "sonner";
@@ -38,6 +38,7 @@ export default function MCQ({ quiz }: MCQProps) {
       clearInterval(interval)
     }
   }, [hasEnded])
+  
   const {mutate: checkAnswer, isPending: isChecking} = useMutation({
     mutationFn: async () => {
       const payload : z.infer<typeof checkAnswerSchema> = {
@@ -45,6 +46,17 @@ export default function MCQ({ quiz }: MCQProps) {
         userAnswer: options[selectedOption]
       };
       const response = await axios.post("/api/quizzy/checkAnswer", payload);
+      return response.data;
+    }
+  })
+
+  const {mutate: endGame} = useMutation({
+    mutationFn: async () => {
+      const payload: z.infer<typeof endGameSchema> = {
+        quizzyId: quiz.id
+      }
+
+      const response = await axios.post(`/api/endGame`, payload);
       return response.data;
     }
   })
@@ -61,14 +73,16 @@ export default function MCQ({ quiz }: MCQProps) {
           }
           
           if(questionIndex === quiz.quizzyQuestions.length - 1) {
+            endGame();
             setHasEnded(true);
+            return;
           } else {
             setQuestionIndex((prev) => prev + 1);
             setSelectedOption(-1);
           }
       }
     })
-  }, [checkAnswer, questionIndex, quiz.quizzyQuestions.length]);
+  }, [checkAnswer, questionIndex, quiz.quizzyQuestions.length, endGame]);
   React.useEffect(() => {
     const handleKeyEvent = (e: KeyboardEvent) => {
       if(e.key === "1") {

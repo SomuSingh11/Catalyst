@@ -6,7 +6,7 @@ import { BarChart, Check, ChevronRight, Loader2, Timer } from "lucide-react";
 import { Card, CardDescription, CardHeader, CardTitle } from "../ui/card";
 import { Button, buttonVariants } from "../ui/button";
 import { useMutation } from "@tanstack/react-query";
-import { checkAnswerSchema } from "@/schemas/form/quiz";
+import { checkAnswerSchema, endGameSchema } from "@/schemas/form/quiz";
 import { differenceInSeconds } from "date-fns";
 
 import { toast } from "sonner";
@@ -56,6 +56,17 @@ export default function OpenEnded({quiz} : OpenEndedProps){
         }
     })
 
+    const {mutate: endGame} = useMutation({
+      mutationFn: async () => {
+        const payload: z.infer<typeof endGameSchema> = {
+          quizzyId: quiz.id
+        }
+  
+        const response = await axios.post(`/api/endGame`, payload);
+        return response.data;
+      }
+    })
+
     const handleNext = React.useCallback(() => {
         checkAnswer(undefined, {
           onSuccess: ({percentageCorrect}) => {
@@ -65,10 +76,12 @@ export default function OpenEnded({quiz} : OpenEndedProps){
                 : `Your answer is ${percentageCorrect}% similar to the correct answer`,
             });
               if(questionIndex === quiz.quizzyQuestions.length - 1) {
+                endGame();
                 setHasEnded(true);
                 // Calculate final percentage including the last question
                 const finalPercentage = (totalPercentage + percentageCorrect) / quiz.quizzyQuestions.length;
                 setTotalPercentage(finalPercentage);
+                return;
               } else {
                 // Add to running total only if not the last question
                 setTotalPercentage(prev => prev + percentageCorrect);
@@ -76,7 +89,7 @@ export default function OpenEnded({quiz} : OpenEndedProps){
               }
             }
         })
-    }, [checkAnswer, questionIndex, quiz.quizzyQuestions.length, blankAnswer, totalPercentage]);
+    }, [checkAnswer, questionIndex, quiz.quizzyQuestions.length, blankAnswer, totalPercentage, endGame]);
 
     React.useEffect(() => {
         const handleKeyEvent = (e: KeyboardEvent) => {

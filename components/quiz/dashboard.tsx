@@ -8,6 +8,7 @@ import HotTopicsCloud from "@/components/quiz/components/hot-topic-cloud";
 import AnimatedList from "@/components/quiz/components/animated-list-demo";
 import { BentoCard, BentoGrid } from "@/components/magicui/bento-grid";
 import { Marquee } from "@/components/magicui/marquee";
+import React from "react";
 interface DashboardProps{
   quizData: any[],
   userId: string
@@ -36,7 +37,12 @@ const files = [
   },
 ];
 
-export function Dashboard({quizData, userId} : DashboardProps) {
+export  function Dashboard({quizData, userId} : DashboardProps) {
+
+  const quizDates = React.useMemo(() => 
+    quizData.map(quiz => new Date(quiz.timeStarted)),
+    [quizData]
+  );
 
   const features = [
     {
@@ -77,9 +83,9 @@ export function Dashboard({quizData, userId} : DashboardProps) {
     {
       Icon: Activity,
       name: "Recent Activity",
-      description: "You have played a total of 43 quizzes.",
+      description: `You have played a total of ${quizData.length} quizzes.`,
       href: "/quizzy/history",
-      cta: "Learn more",
+      cta: "Check history",
       className: "col-span-3 lg:col-span-2",
       background: (
         <AnimatedList items={quizData} className="absolute right-2 top-4 h-[300px] w-full scale-75 border-none transition-all duration-300 ease-out [mask-image:linear-gradient(to_top,transparent_10%,#000_100%)] group-hover:scale-90" />
@@ -99,15 +105,16 @@ export function Dashboard({quizData, userId} : DashboardProps) {
     {
       Icon: CalendarIcon,
       name: "Calendar",
-      description: "Use the calendar to filter your files by date.",
+      description: "Track your quiz streak and daily progress here.",
       className: "col-span-3 lg:col-span-1",
       href: "#",
       cta: "Learn more",
       background: (
         <Calendar
-          mode="single"
-          selected={new Date(2022, 4, 11, 0, 0, 0)}
-          className="absolute right-0 top-10 origin-top scale-75 rounded-md border transition-all duration-300 ease-out [mask-image:linear-gradient(to_top,transparent_40%,#000_100%)] group-hover:scale-90"
+          mode="multiple"
+          selected={quizDates}
+          className="absolute right-0 top-5 origin-top  rounded-md border transition-all duration-300 ease-out [mask-image:linear-gradient(to_top,transparent_40%,#000_100%)] group-hover:scale-110 "
+          disabled={(date) => date > new Date()}
         />
       ),
     },
