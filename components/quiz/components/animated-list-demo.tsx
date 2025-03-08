@@ -49,7 +49,7 @@ const Notification = ({ name, description, icon, color, time }: Item) => {
   return (
     <figure
       className={cn(
-        "relative mx-auto min-h-fit w-full max-w-[400px] cursor-pointer overflow-hidden rounded-2xl p-4",
+        "relative mx-auto h-[80px] w-full max-w-[600px] cursor-pointer overflow-hidden rounded-2xl p-4",
         // animation styles
         "transition-all duration-200 ease-in-out hover:scale-[103%]",
         // light styles
@@ -58,22 +58,22 @@ const Notification = ({ name, description, icon, color, time }: Item) => {
         "transform-gpu dark:bg-transparent dark:backdrop-blur-md dark:[border:1px_solid_rgba(255,255,255,.1)] dark:[box-shadow:0_-20px_80px_-20px_#ffffff1f_inset]"
       )}
     >
-      <div className="flex flex-row items-center gap-3">
+      <div className="flex flex-row items-center gap-6 h-full">
         <div
-          className="flex size-10 items-center justify-center rounded-2xl"
+          className="flex size-12 shrink-0 items-center justify-center rounded-2xl"
           style={{
             backgroundColor: color,
           }}
         >
-          <span className="text-lg">{icon}</span>
+          <span className="text-xl">{icon}</span>
         </div>
-        <div className="flex flex-col overflow-hidden">
-          <figcaption className="flex flex-row items-center whitespace-pre text-lg font-medium dark:text-white ">
-            <span className="text-sm sm:text-lg">{name}</span>
-            <span className="mx-1">·</span>
-            <span className="text-xs text-gray-500">{time}</span>
+        <div className="flex flex-col justify-center min-w-0">
+          <figcaption className="flex flex-row items-center text-lg font-medium dark:text-white">
+            <span className="text-sm sm:text-lg truncate">{name}</span>
+            <span className="mx-2 shrink-0">·</span>
+            <span className="text-xs text-gray-500 shrink-0">{time}</span>
           </figcaption>
-          <p className="text-sm font-normal dark:text-white/60">
+          <p className="text-sm font-normal dark:text-white/60 truncate">
             {description}
           </p>
         </div>
@@ -82,20 +82,36 @@ const Notification = ({ name, description, icon, color, time }: Item) => {
   );
 };
 
+interface HistoryItem {
+  topic: string;
+  gameType: 'mcq' | 'open_ended';
+  timeStarted: Date;
+  accuracy?: number;
+}
+
 export default function AnimatedListDemo({
   className,
+  items,
 }: {
   className?: string;
+  items?: HistoryItem[];
 }) {
+  const historyNotifications = items?.map(item => ({
+    name: item.topic,
+    description: `${item.gameType === 'mcq' ? 'Multiple Choice' : 'Open Ended'} Quiz`,
+    time: new Date(item.timeStarted).toLocaleString(),
+    icon: item.gameType === 'mcq' ? "📝" : "✍️",
+    color: (item.accuracy ?? 0) >= 75 ? "#1a1a1a" :
+           (item.accuracy ?? 0) >= 40 ? "#404040" : "#666666",
+  })) || notifications;
+
   return (
-    <div
-      className={cn(
-        "relative flex h-[500px] w-full flex-col overflow-hidden p-2",
-        className
-      )}
-    >
+    <div className={cn(
+      "relative flex h-[500px] w-full flex-col overflow-hidden p-2",
+      className
+    )}>
       <AnimatedList>
-        {notifications.map((item, idx) => (
+        {historyNotifications.map((item, idx) => (
           <Notification {...item} key={idx} />
         ))}
       </AnimatedList>
