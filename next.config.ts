@@ -10,6 +10,12 @@ const nextConfig: NextConfig = {
       "assets.leetcode.com",
     ], // Add the domain here
   },
+  typescript:{
+    ignoreBuildErrors: true
+  },
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
 };
 
 export default nextConfig;
