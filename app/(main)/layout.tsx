@@ -4,7 +4,6 @@ import { BreadcrumbHeader } from "@/components/breadcrumb-header";
 // import { initialProfile } from "@/lib/intital-profile";
 
 const MainLayout = async ({ children }: { children: React.ReactNode }) => {
-  // const profile = await initialProfile();
 
   return (
     <SidebarProvider>
