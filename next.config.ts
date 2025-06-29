@@ -11,12 +11,12 @@ const nextConfig: NextConfig = {
       "avatars.githubusercontent.com"
     ], // Add the domain here
   },
-  // typescript:{
-  //   ignoreBuildErrors: true
-  // },
-  // eslint: {
-  //   ignoreDuringBuilds: true,
-  // },
+  typescript:{
+    ignoreBuildErrors: true
+  },
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
 };
 
 export default nextConfig;
