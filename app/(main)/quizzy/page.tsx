@@ -30,7 +30,7 @@ export default async function QuizPage() {
   });
   
   return (
-    <div className="max-w-7xl px-6 mt-64">
+    <div className="">
       <Dashboard quizData={quizData} userId={user.id} />
     </div>
   );

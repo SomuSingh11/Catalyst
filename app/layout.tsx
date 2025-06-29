@@ -4,7 +4,7 @@ import "./globals.css";
 import { ClerkProvider } from "@clerk/nextjs";
 import { cn } from "@/lib/utils";
 import Providers from "@/Providers/Providers";
-import { Toaster } from "@/components/ui/sonner";
+
 
 const inter = Inter({
   variable: "--font-inter",
@@ -21,6 +21,9 @@ const sourceCodePro = Source_Code_Pro({
 export const metadata: Metadata = {
   title: "Catalyst",
   description: "Catalyst by k4ge",
+  icons: {
+    icon: "/binaryIcon.svg", 
+  },
 };
 
 export default function RootLayout({
@@ -39,7 +42,7 @@ export default function RootLayout({
         >
           <Providers>
             {children}
-            <Toaster />
+            
             </Providers>
         </body>
       </html>

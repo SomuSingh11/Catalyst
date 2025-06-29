@@ -2,7 +2,7 @@
 
 import React from "react";
   import { Quizzy, QuizzyQuestion } from "@prisma/client";
-import { BarChart, Check, ChevronRight, Loader2, Timer } from "lucide-react";
+import { BarChart, ChevronRight, Loader2, Timer } from "lucide-react";
 import { Card, CardDescription, CardHeader, CardTitle } from "../ui/card";
 import { Button, buttonVariants } from "../ui/button";
 import { useMutation } from "@tanstack/react-query";

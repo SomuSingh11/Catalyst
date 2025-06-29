@@ -47,7 +47,7 @@ export default async function StatisticsPage({params}: StatisticsPageProps){
     let accuracy :number = 0;
 
     if(quizzy.gameType === "mcq") {
-        let totalCorrect = quizzy.quizzyQuestions.reduce((acc, question) => {
+        const totalCorrect = quizzy.quizzyQuestions.reduce((acc, question) => {
             if(question.isCorrect) {
                 return acc + 1;
             }
@@ -56,7 +56,7 @@ export default async function StatisticsPage({params}: StatisticsPageProps){
         accuracy = (totalCorrect / quizzy.quizzyQuestions.length) * 100;
 
     } else if (quizzy.gameType === "open_ended") {
-        let totalCorrect = quizzy.quizzyQuestions.reduce((acc, question) => {
+        const totalCorrect = quizzy.quizzyQuestions.reduce((acc, question) => {
                 return acc + (question.percentageCorrect ?? 0)
         }, 0 );
         accuracy = (totalCorrect / quizzy.quizzyQuestions.length);
@@ -65,7 +65,7 @@ export default async function StatisticsPage({params}: StatisticsPageProps){
     accuracy = Math.round(accuracy*100)/100;
 
     return (
-        <div className="mx-auto max-w-7xl p-8 mt-72">
+        <div className="mx-auto max-w-7xl p-8">
             <div className="flex items-center justify-between mb-8 gap-x-36">
                 <div className="space-y-1">
                     <h2 className="text-2xl lg:text-3xl font-bold whitespace-nowrap">Quiz Statistics</h2>

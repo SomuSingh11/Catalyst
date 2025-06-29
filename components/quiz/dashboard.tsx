@@ -2,15 +2,16 @@
 import { CalendarIcon } from "@radix-ui/react-icons";
 import { Activity, BrainCircuitIcon, Coffee } from "lucide-react";
 
-import { Calendar } from "@/components/ui/calendar";
 import { cn } from "@/lib/utils";
 import HotTopicsCloud from "@/components/quiz/components/hot-topic-cloud";
 import AnimatedList from "@/components/quiz/components/animated-list-demo";
 import { BentoCard, BentoGrid } from "@/components/magicui/bento-grid";
 import { Marquee } from "@/components/magicui/marquee";
 import React from "react";
+import QuizCalendar from "./components/quizzy-calender";
+import { Quizzy } from "@prisma/client";
 interface DashboardProps{
-  quizData: any[],
+  quizData: Quizzy[],
   userId: string
 }
 
@@ -37,12 +38,7 @@ const files = [
   },
 ];
 
-export  function Dashboard({quizData, userId} : DashboardProps) {
-
-  const quizDates = React.useMemo(() => 
-    quizData.map(quiz => new Date(quiz.timeStarted)),
-    [quizData]
-  );
+export  function Dashboard({quizData} : DashboardProps) {
 
   const features = [
     {
@@ -104,18 +100,18 @@ export  function Dashboard({quizData, userId} : DashboardProps) {
     },
     {
       Icon: CalendarIcon,
-      name: "Calendar",
+      name: ``,
       description: "Track your quiz streak and daily progress here.",
       className: "col-span-3 lg:col-span-1",
       href: "#",
       cta: "Learn more",
       background: (
-        <Calendar
-          mode="multiple"
-          selected={quizDates}
-          className="absolute right-0 top-5 origin-top  rounded-md border transition-all duration-300 ease-out [mask-image:linear-gradient(to_top,transparent_40%,#000_100%)] group-hover:scale-110 "
-          disabled={(date) => date > new Date()}
-        />
+        <QuizCalendar 
+        quizzyData={quizData}
+        showStats={true}
+        allowSelection={false} // Set to true if you want manual date selection
+        className="absolute right-0 top-5 origin-top  rounded-md border transition-all duration-300 ease-out [mask-image:linear-gradient(to_top,transparent_40%,#000_100%)] group-hover:scale-110 "
+      />
       ),
     },
   ];

@@ -7,6 +7,7 @@ import { auth } from "@clerk/nextjs/server"
 import { LucideLayoutDashboard } from "lucide-react";
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { ScrollArea } from "@/components/ui/scroll-area"
 
 export default async function HistoryPage(){
     const {userId: clerkId} = await auth();
@@ -23,8 +24,8 @@ export default async function HistoryPage(){
         redirect("/");
     }
 
-    return <div className="md:mt-64 mt-16 w-[600px]">
-        <Card className="shadow-lg">
+    return <div className="flex items-center justify-center">
+        <Card className="shadow-lg max-h-screen">
             <CardHeader>
                 <div className="flex items-center justify-between">
                     <div className="flex gap-2">
@@ -49,8 +50,10 @@ export default async function HistoryPage(){
                     </Link>
                 </div>
             </CardHeader>
-            <CardContent className="max-h-[60-vh] overflow-y-auto scrollbar-hide">
+            <CardContent className="overflow-y-auto scrollbar-hide">
+                <ScrollArea className="h-[70vh] w-[60vw] p-4 rounded-md border">
                 <HistoryComponent limit={100} userId={user.id} />
+                </ScrollArea>
             </CardContent>
         </Card>
     </div>

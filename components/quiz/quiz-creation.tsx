@@ -11,7 +11,6 @@ import { quizCreationSchema } from "@/schemas/form/quiz";
 import {
   Card,
   CardContent,
-  CardDescription,
   CardHeader,
   CardTitle,
 } from "../ui/card";
@@ -28,9 +27,8 @@ import {
 import { useMutation } from "@tanstack/react-query";
 
 import { Input } from "@/components/ui/input";
-import { BookOpen, CopyCheck, Loader2, Send } from "lucide-react";
+import { BookOpen, CopyCheck, Loader2, Send, Sparkles } from "lucide-react";
 import { Separator } from "../ui/separator";
-import { BorderBeam } from "../magicui/border-beam";
 import axios from "axios";
 import { useRouter } from "next/navigation";
 import LoadingQuestions from "./loading-questions";
@@ -101,113 +99,143 @@ export default function QuizCreation() {
   }
 
   return (
-    <div>
-      <Card className="relative dark:bg-sidebar p-2">
-        <CardHeader>
-          <CardTitle className="font-bold text-2xl">Quiz Creation</CardTitle>
-          <CardDescription>Choose a topic</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-              <FormField
-                control={form.control}
-                name="topic"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Topic</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Enter a Topic..." {...field} />
-                    </FormControl>
-                    <FormDescription>Please provide a topic.</FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="amount"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Number of Questions</FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder="Enter an amount..."
-                        {...field}
-                        type="number"
-                        min={1}
-                        max={20}
-                        onChange={(e) => {
-                          form.setValue("amount", parseInt(e.target.value));
-                        }}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <div className="flex justify-between">
-                <Button
-                  className="w-1/2 rounded-none rounded-l-lg"
+ <div className="">
+  <Card className="relative col-span-3 overflow-hidden border border-gray-300 shadow-xl bg-white dark:bg-sidebar">
+    
+    {/* Card Header */}
+    <CardHeader className="relative">
+      <CardTitle className="flex items-center gap-3 text-2xl">
+        <div className="p-3 bg-gray-200 rounded-xl shadow">
+          <BookOpen className="size-8 text-black" />
+        </div>
+        <div>
+          <span className="text-black">Quiz Generator</span>
+          <div className="flex items-center gap-1 mt-1">
+            <CopyCheck className="size-4 text-gray-600" />
+            <span className="text-sm font-normal text-gray-600">
+              AI-powered quiz creation
+            </span>
+          </div>
+        </div>
+      </CardTitle>
+    </CardHeader>
+
+    {/* Card Content */}
+    <CardContent className="space-y-8">
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+
+          {/* Topic Input */}
+          <FormField
+            control={form.control}
+            name="topic"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="font-medium text-gray-800">Quiz Topic</FormLabel>
+                <FormControl>
+                  <Input
+                    placeholder="e.g., Machine Learning, History..."
+                    {...field}
+                    className="text-base py-3"
+                  />
+                </FormControl>
+                <FormDescription>Select a topic for your quiz.</FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          {/* Quick Suggestions */}
+          <div className="space-y-2">
+            <div className="flex items-center gap-2 text-sm font-medium text-gray-600">
+              <Sparkles className="size-4 text-gray-700" />
+              Quick Suggestions:
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {["Web Development", "Artificial Intelligence", "Data Structures", "Aptitude", "Operating Systems"].map((suggestion) => (
+                <button
+                  key={suggestion}
                   type="button"
-                  variant={
-                    form.getValues("type") === "mcq" ? "default" : "secondary"
-                  }
-                  onClick={() => {
-                    form.setValue("type", "mcq");
-                  }}
+                  onClick={() => form.setValue("topic", suggestion)}
+                  className="px-3 py-2 text-xs bg-gray-100 hover:bg-gray-200 text-gray-700 hover:text-black rounded-full transition-all duration-200 border border-gray-300"
                 >
-                  <CopyCheck className="m-4 h-4 mr-2" />
-                  Multiple Choice
-                </Button>
-                <Separator orientation="vertical" />
-                <Button
-                  className="w-1/2 rounded-none rounded-r-lg"
-                  type="button"
-                  variant={
-                    form.getValues("type") === "open_ended"
-                      ? "default"
-                      : "secondary"
-                  }
-                  onClick={() => {
-                    form.setValue("type", "open_ended");
-                  }}
-                >
-                  <BookOpen className="m-4 h-4 mr-2" />
-                  Open Ended
-                </Button>
+                  {suggestion}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Amount Input */}
+          <FormField
+            control={form.control}
+            name="amount"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="font-medium text-gray-800">Number of Questions</FormLabel>
+                <FormControl>
+                  <Input
+                    placeholder="1 - 20"
+                    {...field}
+                    type="number"
+                    min={1}
+                    max={20}
+                    onChange={(e) => form.setValue("amount", parseInt(e.target.value))}
+                    className="text-base py-3"
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          {/* Type Selection */}
+          <div className="flex justify-between border border-gray-300 rounded-xl overflow-hidden">
+            <Button
+              className="w-1/2 rounded-none rounded-l-xl h-14 text-base"
+              type="button"
+              variant={form.getValues("type") === "mcq" ? "default" : "secondary"}
+              onClick={() => form.setValue("type", "mcq")}
+            >
+              <CopyCheck className="mr-2" />
+              Multiple Choice
+            </Button>
+            <Separator orientation="vertical" />
+            <Button
+              className="w-1/2 rounded-none rounded-r-xl h-14 text-base"
+              type="button"
+              variant={form.getValues("type") === "open_ended" ? "default" : "secondary"}
+              onClick={() => form.setValue("type", "open_ended")}
+            >
+              <BookOpen className="mr-2" />
+              Open Ended
+            </Button>
+          </div>
+
+          {/* Submit Button */}
+          <Button
+            type="submit"
+            disabled={isChecking}
+            className="w-full h-14 text-lg font-semibold mt-2"
+          >
+            {isChecking ? (
+              <div className="flex items-center gap-3">
+                <Loader2 className="h-5 w-5 animate-spin" />
+                Generating Quiz...
               </div>
-              <Button 
-                type="submit"
-                disabled={isChecking}
-                >
-                  {isChecking ? (
-                  <div className="flex items-center gap-2">
-                    <Loader2 className="h-4 w-4 animate-spin"/>
-                    <span>Fetching questions!...</span>
-                  </div>
-                  ) : (
-                  <div className="flex items-center gap-2">
-                    <span>Submit</span>
-                    <Send className="h-3 w-3"/>
-                  </div>
-                )}
-              </Button>
-            </form>
-          </Form>
-        </CardContent>
-        <BorderBeam
-          duration={6}
-          size={100}
-          className="from-transparent via-red-500 dark:via-red-200 to-transparent"
-        />
-        <BorderBeam
-          duration={6}
-          delay={3}
-          size={100}
-          className="from-transparent via-blue-500 dark:via-blue-200 to-transparent"
-        />
-      </Card>
-    </div>
+            ) : (
+              <div className="flex items-center gap-3">
+                <Send className="h-4 w-4" />
+                Create Quiz
+              </div>
+            )}
+          </Button>
+        </form>
+      </Form>
+    </CardContent>
+  </Card>
+</div>
+
+
+
   );
 }
