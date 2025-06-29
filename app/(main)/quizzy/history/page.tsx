@@ -7,7 +7,9 @@ import { auth } from "@clerk/nextjs/server"
 import { LucideLayoutDashboard } from "lucide-react";
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { ScrollArea } from "@/components/ui/scroll-area"
+import { ScrollArea } from "@/components/ui/scroll-area";
+import prisma from "@/lib/db";
+
 
 export default async function HistoryPage(){
     const {userId: clerkId} = await auth();
