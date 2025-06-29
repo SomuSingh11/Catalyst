@@ -2,6 +2,8 @@ import React from "react";
 import { redirect } from "next/navigation";
 import QuizCreation from "@/components/quiz/quiz-creation";
 import { auth } from "@clerk/nextjs/server";
+import prisma from "@/lib/db";
+
 
 export const metadata = {
   title: "Quizzy | Quiz",
