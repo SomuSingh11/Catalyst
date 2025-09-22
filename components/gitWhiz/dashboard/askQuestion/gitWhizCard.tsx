@@ -1,6 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
-import { Brain, Lightbulb, Loader2, Search, Sparkles } from "lucide-react";
+import { Bird, Brain, Loader2, Search, Sparkles } from "lucide-react";
 import React from "react";
 import FeatureHighLights from "./feature-highlights";
 import { Button } from "@/components/ui/button";
@@ -13,11 +13,31 @@ interface gitWhizCardProps {
 }
 
 const suggestedQuestions = [
-  "How do I add a new feature to this project?",
-  "Where should I implement user authentication?",
-  "Which files handle the database connections?",
-  "How can I improve the performance of this component?",
-  "What's the best way to add error handling here?",
+  "Which file implements the authentication logic?",
+  "Where is the user registration API defined?",
+  "Which component renders the login form?",
+  "Where is the database connection initialized?",
+  "Which service handles external API calls?",
+  "Where is the routing logic defined?",
+  "Which files contain middleware functions?",
+  "Where is input validation implemented?",
+  "Which function handles error logging?",
+  "Where are constants or config variables stored?",
+  "Which file manages session handling?",
+  "Where is authorization (role-based access) implemented?",
+  "Which module defines the data models?",
+  "Where is caching logic set up?",
+  "Which function is responsible for file uploads?",
+  "Where is the search functionality implemented?",
+  "Which files define reusable utility functions?",
+  "Where is state management configured?",
+  "Which file is the entry point of the project?",
+  "Where is the email/notification service implemented?",
+  "Which function handles payment processing?",
+  "Where is pagination logic implemented?",
+  "Which files define environment-specific settings?",
+  "Where are API response formats standardized?",
+  "Which function or file handles rate limiting?",
 ];
 
 function GitwhizCard({
@@ -26,13 +46,18 @@ function GitwhizCard({
   question,
   setQuestion,
 }: gitWhizCardProps) {
+  const handleSuggestedQuestionClick = () => {
+    const randomIndex = Math.floor(Math.random() * suggestedQuestions.length);
+    const randomQuestion = suggestedQuestions[randomIndex];
+    setQuestion(randomQuestion);
+  };
   return (
     <div>
-      <Card className="relative col-span-3 overflow-hidden border border-gray-300 shadow bg-white">
-        <CardHeader className="relative">
+      <Card className="relative col-span-3 overflow-hidden border border-gray-300 shadow bg-slate-50/50">
+        <CardHeader className="relative ">
           <CardTitle className="flex items-center gap-3 text-xl">
-            <div className="p-2 bg-gray-200 rounded-xl shadow">
-              <Brain className="size-8 text-black" />
+            <div className="p-2 bg-secondary rounded-xl shadow">
+              <Brain className="size-8 text-green-800" />
             </div>
             <div>
               <span className="text-gray-800 font-display">Ask GitWhiz AI</span>
@@ -49,7 +74,7 @@ function GitwhizCard({
         <CardContent>
           <form onSubmit={onSubmit} className="space-y-4">
             <div className="space-y-3">
-              <div className="flex items-center gap-2 text-sm font-medium text-gray-800">
+              <div className="flex items-center gap-2 text-sm font-light text-gray-800 font-code pb-2">
                 <Search className="size-4" />
                 What would you like to know about your project?
               </div>
@@ -57,49 +82,39 @@ function GitwhizCard({
                 placeholder="Ask anything about your codebase - tutorials, architecture, best practices, implementation details, or get suggestions for improvements..."
                 value={question}
                 onChange={(e) => setQuestion(e.target.value)}
-                className="min-h-[50px]"
+                className="min-h-[80px] focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-slate-400 font-sans text-gray-800"
                 disabled={loading}
               />
             </div>
-
-            {/* Suggested Questions */}
-            <div className="space-y-3">
-              <div className="flex items-center gap-2 text-sm font-medium text-gray-600">
-                <Lightbulb className="size-4 text-gray-700" />
-                Quick suggestions:
-              </div>
-              <div className="flex flex-wrap gap-2">
-                {suggestedQuestions.slice(0, 3).map((suggestion, index) => (
-                  <button
-                    key={index}
-                    type="button"
-                    onClick={() => setQuestion(suggestion)}
-                    className="px-3 py-2 text-xs bg-gray-100 hover:bg-gray-200 text-gray-700 hover:text-black rounded-full transition-all duration-200 border border-gray-300"
-                    disabled={loading}
-                  >
-                    {suggestion}
-                  </button>
-                ))}
-              </div>
+            <div className="flex items-center justify-between gap-6 pt-3">
+              <Button
+                disabled={loading || !question.trim()}
+                variant={"ghost"}
+                className="text-slate-600 flex-1 hover:text-green-900 hover:bg-slate-100 rounded-lg h-11 border border-gray-300 transition-all duration-150 active:scale-95"
+              >
+                {loading ? (
+                  <>
+                    <Loader2 className="size-5 animate-spin mr-2" />
+                    Analyzing codebase...
+                  </>
+                ) : (
+                  <>
+                    <Bird className="size-5 mr-2" />
+                    Ask GitWhiz AI
+                  </>
+                )}
+              </Button>
+              <Button
+                variant={"ghost"}
+                type="button"
+                className="text-slate-600 flex-1 hover:bg-slate-100 hover:text-slate-800 rounded-lg h-11 border border-gray-300 transition-all duration-150 active:scale-95"
+                disabled={loading}
+                onClick={handleSuggestedQuestionClick}
+              >
+                <Sparkles className="size-5 mr-2" />
+                Quick Suggestions
+              </Button>
             </div>
-
-            <Button
-              disabled={loading || !question.trim()}
-              className="w-full bg-black hover:bg-gray-900 text-white shadow hover:shadow-lg transition-all duration-200 rounded-xl h-10"
-              size="lg"
-            >
-              {loading ? (
-                <>
-                  <Loader2 className="size-5 animate-spin mr-2" />
-                  Analyzing codebase...
-                </>
-              ) : (
-                <>
-                  <Brain className="size-5 mr-2" />
-                  Ask GitWhiz AI
-                </>
-              )}
-            </Button>
           </form>
 
           <FeatureHighLights />

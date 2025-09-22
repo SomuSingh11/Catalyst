@@ -5,9 +5,10 @@ import ArchieveButton from "@/components/gitWhiz/dashboard/archieve-button";
 import useProject from "@/hooks/use-project";
 import { BookCopy, CalendarDays, ExternalLink } from "lucide-react";
 import Link from "next/link";
+import { Skeleton } from "../ui/skeleton";
 
 function ProjectInfo() {
-  const { project } = useProject();
+  const { project, isLoading } = useProject();
 
   return (
     <div>
@@ -16,18 +17,26 @@ function ProjectInfo() {
           {/* Name */}
           <div className="flex items-center gap-2 font-medium">
             <BookCopy className="size-5 text-green-800" />
-            <span>{project?.name || "Project Name"}</span>
+            {isLoading ? (
+              <Skeleton className="pl-3 h-4 w-36" />
+            ) : (
+              <span>{project?.name || "Project Name"}</span>
+            )}
           </div>
 
           <div className="flex justify-between items-center gap-4 ">
             {/* Created At */}
             <div className="flex items-center gap-2 p-1.5 ">
               <CalendarDays className="size-5 text-gray-400" />
-              <span className="text-thin font-code">
-                {project
-                  ? new Date(project?.createAt).toLocaleDateString()
-                  : "N/A"}
-              </span>
+              {isLoading ? (
+                <Skeleton className="pl-3 h-4 w-20" />
+              ) : (
+                <span className="text-thin font-code">
+                  {project
+                    ? new Date(project?.createAt).toLocaleDateString()
+                    : "N/A"}
+                </span>
+              )}
             </div>
 
             <ArchieveButton projectId={project?.id} />
