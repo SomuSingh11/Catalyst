@@ -7,7 +7,6 @@ import { Input } from "@/components/ui/input";
 import { api } from "@/trpc/react"; // tRPC API client
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
-import Image from "next/image";
 import { useRouter } from "next/navigation";
 import useProject from "@/hooks/use-project";
 import { Loader2 } from "lucide-react";
@@ -18,7 +17,7 @@ type FormInput = {
   githubToken?: string;
 };
 
-const CreatePage = () => {
+const CreateProject = () => {
   const { register, handleSubmit, reset } = useForm<FormInput>();
   const createProject = api.whizProject.createProject.useMutation(); // Create mutation hook using tRPC to send createProject mutation
   const utils = api.useUtils();
@@ -51,25 +50,14 @@ const CreatePage = () => {
 
   return (
     <div className="flex items-center justify-center gap-12 h-full px-4">
-      <Image
-        src="/codeCreate.gif"
-        alt="Code integration illustration"
-        width={500}
-        height={500}
-      />
-
       <div className="max-w-md w-full">
         <div className="mb-4">
-          <h1 className="text-3xl font-semibold tracking-tight">
+          <h1 className="text-2xl font-normal font-display py-2 tracking-tight">
             Connect a GitHub Repository
           </h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            Start by linking a GitHub repo. GitWhiz will use this to generate
-            insights and dashboards.
-          </p>
         </div>
 
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-3">
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <Input
             {...register("projectName", { required: true })}
             placeholder="Enter project name (e.g., Portfolio App)"
@@ -85,7 +73,7 @@ const CreatePage = () => {
           <Button
             type="submit"
             disabled={createProject.isPending}
-            className="w-full mt-2"
+            className="w-full mt-4 bg-secondary/80 text-green-800 hover:bg-secondary hover:text-green-900 transition-colors"
           >
             {createProject.isPending ? (
               <Loader2 className="animate-spin" />
@@ -99,4 +87,4 @@ const CreatePage = () => {
   );
 };
 
-export default CreatePage;
+export default CreateProject;

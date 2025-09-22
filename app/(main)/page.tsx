@@ -2,8 +2,30 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Database, Layers, Lock, Sparkles, Code2, Palette, Bot, FileCode2, Users, Zap, Brain, CheckCircle, BarChart3, Star, Bird } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import {
+  Database,
+  Layers,
+  Lock,
+  Sparkles,
+  Code2,
+  Palette,
+  Bot,
+  FileCode2,
+  Users,
+  Zap,
+  Brain,
+  CheckCircle,
+  BarChart3,
+  Star,
+  Bird,
+} from "lucide-react";
 import Link from "next/link";
 
 export default function Page() {
@@ -29,16 +51,56 @@ export default function Page() {
         "AI-powered project & file-level insights",
       ],
       techStack: [
-        { name: "Next.js", icon: <Layers className="w-6 h-6 text-black" />, description: "React Framework" },
-        { name: "Tailwind CSS", icon: <Palette className="w-6 h-6 text-cyan-500" />, description: "Utility-first CSS Framework" },
-        { name: "Clerk", icon: <Lock className="w-6 h-6 text-purple-500" />, description: "Authentication & User Management" },
-        { name: "React Query", icon: <Sparkles className="w-6 h-6 text-yellow-500" />, description: "Data Synchronization" },
-        { name: "TypeScript", icon: <FileCode2 className="w-6 h-6 text-blue-600" />, description: "Typed JavaScript" },
-        { name: "tRPC", icon: <Code2 className="w-6 h-6 text-pink-500" />, description: "End-to-End Typesafe API" },
-        { name: "Vercel", icon: <Zap className="w-6 h-6 text-black" />, description: "Deployment Platform" },
-        { name: "Prisma", icon: <Code2 className="w-6 h-6 text-indigo-500" />, description: "ORM for TypeScript" },
-        { name: "Neon DB", icon: <Database className="w-6 h-6 text-blue-500" />, description: "Serverless Postgres Database" },
-        { name: "Gemini AI", icon: <Bot className="w-6 h-6 text-green-500" />, description: "AI Language Model" },
+        {
+          name: "Next.js",
+          icon: <Layers className="w-6 h-6 text-black" />,
+          description: "React Framework",
+        },
+        {
+          name: "Tailwind CSS",
+          icon: <Palette className="w-6 h-6 text-cyan-500" />,
+          description: "Utility-first CSS Framework",
+        },
+        {
+          name: "Clerk",
+          icon: <Lock className="w-6 h-6 text-purple-500" />,
+          description: "Authentication & User Management",
+        },
+        {
+          name: "React Query",
+          icon: <Sparkles className="w-6 h-6 text-yellow-500" />,
+          description: "Data Synchronization",
+        },
+        {
+          name: "TypeScript",
+          icon: <FileCode2 className="w-6 h-6 text-blue-600" />,
+          description: "Typed JavaScript",
+        },
+        {
+          name: "tRPC",
+          icon: <Code2 className="w-6 h-6 text-pink-500" />,
+          description: "End-to-End Typesafe API",
+        },
+        {
+          name: "Vercel",
+          icon: <Zap className="w-6 h-6 text-black" />,
+          description: "Deployment Platform",
+        },
+        {
+          name: "Prisma",
+          icon: <Code2 className="w-6 h-6 text-indigo-500" />,
+          description: "ORM for TypeScript",
+        },
+        {
+          name: "Neon DB",
+          icon: <Database className="w-6 h-6 text-blue-500" />,
+          description: "Serverless Postgres Database",
+        },
+        {
+          name: "Gemini AI",
+          icon: <Bot className="w-6 h-6 text-green-500" />,
+          description: "AI Language Model",
+        },
       ],
     },
     {
@@ -58,15 +120,51 @@ export default function Page() {
         "Detailed reports: correct, incorrect, explanations",
       ],
       techStack: [
-        { name: "Next.js", icon: <Layers className="w-6 h-6 text-black" />, description: "React Framework" },
-        { name: "Tailwind CSS", icon: <Palette className="w-6 h-6 text-cyan-500" />, description: "Utility-first CSS Framework" },
-        { name: "Clerk", icon: <Lock className="w-6 h-6 text-purple-500" />, description: "Authentication & User Management" },
-        { name: "React Query", icon: <Sparkles className="w-6 h-6 text-yellow-500" />, description: "Data Synchronization" },
-        { name: "TypeScript", icon: <FileCode2 className="w-6 h-6 text-blue-600" />, description: "Typed JavaScript" },
-        { name: "Vercel", icon: <Zap className="w-6 h-6 text-black" />, description: "Deployment Platform" },
-        { name: "Prisma", icon: <Code2 className="w-6 h-6 text-indigo-500" />, description: "ORM for TypeScript" },
-        { name: "Neon DB", icon: <Database className="w-6 h-6 text-blue-500" />, description: "Serverless Postgres Database" },
-        { name: "Gemini AI", icon: <Bot className="w-6 h-6 text-green-500" />, description: "AI Language Model" },
+        {
+          name: "Next.js",
+          icon: <Layers className="w-6 h-6 text-black" />,
+          description: "React Framework",
+        },
+        {
+          name: "Tailwind CSS",
+          icon: <Palette className="w-6 h-6 text-cyan-500" />,
+          description: "Utility-first CSS Framework",
+        },
+        {
+          name: "Clerk",
+          icon: <Lock className="w-6 h-6 text-purple-500" />,
+          description: "Authentication & User Management",
+        },
+        {
+          name: "React Query",
+          icon: <Sparkles className="w-6 h-6 text-yellow-500" />,
+          description: "Data Synchronization",
+        },
+        {
+          name: "TypeScript",
+          icon: <FileCode2 className="w-6 h-6 text-blue-600" />,
+          description: "Typed JavaScript",
+        },
+        {
+          name: "Vercel",
+          icon: <Zap className="w-6 h-6 text-black" />,
+          description: "Deployment Platform",
+        },
+        {
+          name: "Prisma",
+          icon: <Code2 className="w-6 h-6 text-indigo-500" />,
+          description: "ORM for TypeScript",
+        },
+        {
+          name: "Neon DB",
+          icon: <Database className="w-6 h-6 text-blue-500" />,
+          description: "Serverless Postgres Database",
+        },
+        {
+          name: "Gemini AI",
+          icon: <Bot className="w-6 h-6 text-green-500" />,
+          description: "AI Language Model",
+        },
       ],
     },
   ];
@@ -75,7 +173,7 @@ export default function Page() {
 
   return (
     <div className="bg-white flex items-center justify-center mt-6">
-      <section className="bg-gray-50 w-full">
+      <section className="w-full">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid lg:grid-cols-2 gap-16 items-center">
             {/* Application List */}
@@ -91,13 +189,25 @@ export default function Page() {
                   <div
                     key={index}
                     className={`p-6 rounded-2xl cursor-pointer transition-all duration-300 ${
-                      activeApp === index ? "bg-black text-white" : "bg-white hover:bg-gray-100 border border-gray-200"
+                      activeApp === index
+                        ? "bg-black text-white"
+                        : "bg-white hover:bg-gray-100 border border-gray-200"
                     }`}
                     onClick={() => setActiveApp(index)}
                   >
                     <div className="flex items-start gap-4">
-                      <div className={`p-2 rounded-lg ${activeApp === index ? "bg-white/20" : "bg-gray-100"}`}>
-                        <div className={activeApp === index ? "text-white" : "text-black"}>{app.icon}</div>
+                      <div
+                        className={`p-2 rounded-lg ${
+                          activeApp === index ? "bg-white/20" : "bg-gray-100"
+                        }`}
+                      >
+                        <div
+                          className={
+                            activeApp === index ? "text-white" : "text-black"
+                          }
+                        >
+                          {app.icon}
+                        </div>
                       </div>
                       <div className="flex-1">
                         <div className="flex items-center gap-2 mb-2">
@@ -114,11 +224,18 @@ export default function Page() {
                             {app.statusType === "success" ? "Live" : "Beta"}
                           </span>
                         </div>
-                        <p className="text-sm font-medium mb-2 opacity-80">{app.subtitle}</p>
-                        <p className="opacity-70 mb-4 text-sm">{app.description}</p>
+                        <p className="text-sm font-medium mb-2 opacity-80">
+                          {app.subtitle}
+                        </p>
+                        <p className="opacity-70 mb-4 text-sm">
+                          {app.description}
+                        </p>
                         <ul className="space-y-1">
                           {app.benefits.map((benefit, i) => (
-                            <li key={i} className="flex items-center gap-2 text-sm opacity-70">
+                            <li
+                              key={i}
+                              className="flex items-center gap-2 text-sm opacity-70"
+                            >
                               <CheckCircle className="w-4 h-4" />
                               {benefit}
                             </li>
@@ -151,7 +268,9 @@ export default function Page() {
                       <div className="w-3 h-3 bg-green-400 rounded-full" />
                     </div>
                     <div className="text-gray-400 text-sm">
-                      {currentApp.id === "quizzy" ? "quizzy.myapp.dev" : "gitwhiz.myapp.dev"}
+                      {currentApp.id === "quizzy"
+                        ? "quizzy.myapp.dev"
+                        : "gitwhiz.myapp.dev"}
                     </div>
                   </div>
 
@@ -160,7 +279,9 @@ export default function Page() {
                       <div className="flex justify-between items-center">
                         <div className="flex items-center gap-2">
                           <span className="text-gray-400 text-sm">Topic</span>
-                          <span className="px-2 py-1 text-white rounded-lg bg-gray-700 text-sm">Data Structures</span>
+                          <span className="px-2 py-1 text-white rounded-lg bg-gray-700 text-sm">
+                            Data Structures
+                          </span>
                         </div>
                         <div className="flex items-center text-gray-400 text-sm">
                           <div className="w-4 h-4 mr-1">⏱</div>
@@ -176,32 +297,39 @@ export default function Page() {
                           </div>
                           <div className="flex-1">
                             <p className="text-white text-base">
-                              What is the time complexity of searching in a balanced binary search tree?
+                              What is the time complexity of searching in a
+                              balanced binary search tree?
                             </p>
                           </div>
                         </div>
                       </div>
 
                       <div className="space-y-3">
-                        {["O(n)", "O(log n)", "O(n²)", "O(1)"].map((option, i) => (
-                          <div
-                            key={i}
-                            className={`p-4 rounded-lg flex items-center gap-3 cursor-pointer transition-colors ${
-                              option === "O(log n)"
-                                ? "bg-white text-black"
-                                : "bg-gray-800 hover:bg-gray-700 text-white"
-                            }`}
-                          >
-                            <div className="border border-gray-600 rounded px-2 py-1 text-sm">{i + 1}</div>
-                            <span>{option}</span>
-                          </div>
-                        ))}
+                        {["O(n)", "O(log n)", "O(n²)", "O(1)"].map(
+                          (option, i) => (
+                            <div
+                              key={i}
+                              className={`p-4 rounded-lg flex items-center gap-3 cursor-pointer transition-colors ${
+                                option === "O(log n)"
+                                  ? "bg-white text-black"
+                                  : "bg-gray-800 hover:bg-gray-700 text-white"
+                              }`}
+                            >
+                              <div className="border border-gray-600 rounded px-2 py-1 text-sm">
+                                {i + 1}
+                              </div>
+                              <span>{option}</span>
+                            </div>
+                          )
+                        )}
                       </div>
                     </div>
                   ) : (
                     <div className="space-y-3">
                       <div className="flex items-center justify-between">
-                        <div className="text-lg font-medium">Repository Analytics</div>
+                        <div className="text-lg font-medium">
+                          Repository Analytics
+                        </div>
                         <div className="text-green-400 text-sm">Live Data</div>
                       </div>
                       <div className="grid grid-cols-3 gap-4">
@@ -211,7 +339,9 @@ export default function Page() {
                         </div>
                         <div className="bg-gray-800 p-4 rounded flex flex-col items-center justify-center h-20">
                           <Users className="w-6 h-6 text-purple-400 mb-1" />
-                          <div className="text-sm text-gray-400">Contributors</div>
+                          <div className="text-sm text-gray-400">
+                            Contributors
+                          </div>
                         </div>
                         <div className="bg-gray-800 p-4 rounded flex flex-col items-center justify-center h-20">
                           <Star className="w-6 h-6 text-yellow-400 mb-1" />
@@ -219,7 +349,9 @@ export default function Page() {
                         </div>
                       </div>
                       <div className="bg-gray-800 rounded p-4 mt-4">
-                        <div className="text-sm text-gray-400 mb-2">Recent Activity</div>
+                        <div className="text-sm text-gray-400 mb-2">
+                          Recent Activity
+                        </div>
                         <div className="space-y-1 text-sm">
                           <div>• Updated README.md</div>
                           <div>• Merged pull request #42</div>
@@ -234,7 +366,9 @@ export default function Page() {
                 <div className="flex gap-4 mt-6">
                   <Link
                     href={
-                      currentApp.id === "gitwhiz" ? `${currentApp.route}/create` : currentApp.route
+                      currentApp.id === "gitwhiz"
+                        ? `${currentApp.route}/create`
+                        : currentApp.route
                     }
                   >
                     <Button className="bg-white text-black hover:bg-gray-200 px-6">
@@ -268,15 +402,18 @@ export default function Page() {
                           >
                             {tech.icon}
                             <div>
-                              <h4 className="font-semibold text-gray-800">{tech.name}</h4>
-                              <p className="text-sm text-gray-600">{tech.description}</p>
+                              <h4 className="font-semibold text-gray-800">
+                                {tech.name}
+                              </h4>
+                              <p className="text-sm text-gray-600">
+                                {tech.description}
+                              </p>
                             </div>
                           </div>
                         ))}
                       </div>
                     </DialogContent>
                   </Dialog>
-                  
                 </div>
                 <div className="fixed bottom-6 right-4 z-50">
                   <div className="bg-black text-white text-xs px-4 py-2 rounded-lg shadow-lg opacity-80 hover:opacity-100 transition">

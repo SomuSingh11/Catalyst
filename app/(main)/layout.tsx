@@ -4,19 +4,25 @@ import { BreadcrumbHeader } from "@/components/breadcrumb-header";
 // import { initialProfile } from "@/lib/intital-profile";
 
 const MainLayout = async ({ children }: { children: React.ReactNode }) => {
-
   return (
     <SidebarProvider>
-      <AppSidebar />
-      <main className="w-full m-2">
-        <div className="flex items-center gap-2 border-sidebar-border bg-sidebar border shadow rounded-md px-1">
-          <BreadcrumbHeader />
-        </div>
-        <div className="h-4"></div>
-        <div className="border-sidebar-border bg-sidebar border shadow rounded-md overflow-y-scroll h-[calc(100vh-6rem)] p-4">
-          {children}
-        </div>
-      </main>
+      <div className="flex h-screen w-full">
+        <AppSidebar />
+        <main className="flex-1 flex flex-col p-2 ">
+          {/* Header/Breadcrumb - Fixed height */}
+          <div className="flex items-center gap-2 border-sidebar-border border shadow rounded-md px-1 h-12 flex-shrink-0">
+            <BreadcrumbHeader />
+          </div>
+
+          {/* Spacer */}
+          <div className="h-4 flex-shrink-0"></div>
+
+          {/* Main content area - Takes remaining space */}
+          <div className="border shadow rounded-md flex-1 p-6 overflow-auto">
+            {children}
+          </div>
+        </main>
+      </div>
     </SidebarProvider>
   );
 };

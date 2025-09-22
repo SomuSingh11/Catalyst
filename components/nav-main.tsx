@@ -1,12 +1,12 @@
-"use client"
+"use client";
 
-import { Check, ChevronRight, CirclePower, type LucideIcon } from "lucide-react"
+import { ChevronRight, CirclePower, type LucideIcon } from "lucide-react";
 
 import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
-} from "@/components/ui/collapsible"
+} from "@/components/ui/collapsible";
 import {
   SidebarGroup,
   SidebarGroupLabel,
@@ -16,27 +16,26 @@ import {
   SidebarMenuSub,
   SidebarMenuSubButton,
   SidebarMenuSubItem,
-} from "@/components/ui/sidebar"
+} from "@/components/ui/sidebar";
 
-import { usePathname } from "next/navigation";
+import { redirect, usePathname } from "next/navigation";
 import useProject from "@/hooks/use-project";
-import { Separator } from "./ui/separator";
 import { cn } from "@/lib/utils";
 
 export function NavMain({
   items,
 }: {
   items: {
-    title: string
-    url: string
-    icon?: LucideIcon
-    isActive?: boolean
+    title: string;
+    url: string;
+    icon?: LucideIcon;
+    isActive?: boolean;
     items?: {
-      title: string
-      url: string
-      icon?: LucideIcon
-    }[]
-  }[]
+      title: string;
+      url: string;
+      icon?: LucideIcon;
+    }[];
+  }[];
 }) {
   const pathname = usePathname();
   const { projects, projectId, setProjectId } = useProject();
@@ -46,7 +45,9 @@ export function NavMain({
       <SidebarGroupLabel>Micro Saas</SidebarGroupLabel>
       <SidebarMenu>
         {items.map((item) => {
-          const isParentActive = pathname === item.url || item.items?.some(sub => pathname === sub.url);
+          const isParentActive =
+            pathname === item.url ||
+            item.items?.some((sub) => pathname === sub.url);
 
           return (
             <Collapsible
@@ -59,7 +60,7 @@ export function NavMain({
                 <CollapsibleTrigger asChild>
                   <SidebarMenuButton
                     tooltip={item.title}
-                    className={isParentActive ? "bg-black text-muted" : ""}
+                    className={isParentActive ? "bg-secondary text-green/" : ""}
                   >
                     {item.icon && <item.icon />}
                     <span>{item.title}</span>
@@ -79,7 +80,12 @@ export function NavMain({
                             <a href={subItem.url}>
                               {subItem.icon && <subItem.icon />}
                               <span>{subItem.title}</span>
-                              {isSubActive && <CirclePower color={"green"} className="ml-auto" />}
+                              {isSubActive && (
+                                <CirclePower
+                                  color={"green"}
+                                  className="ml-auto"
+                                />
+                              )}
                             </a>
                           </SidebarMenuSubButton>
                         </SidebarMenuSubItem>
@@ -88,34 +94,42 @@ export function NavMain({
 
                     {/* Projects section for GitWhiz */}
                     {item.title === "GitWhiz" && (
-                      <div className="flex flex-col mb-2">
-                        
-                        {projects &&(
-                          <>
-                            <Separator className="mt-1 mb-1" />
-                            <SidebarGroupLabel>Projects</SidebarGroupLabel>
-                          </>
-                        )}
-                        
-                        <div className="max-h-32 overflow-y-auto">
+                      <div className="flex flex-col">
+                        <div className="max-h-64 overflow-y-auto">
                           {projects?.map((project) => {
                             const isProjectActive = project.id === projectId;
                             return (
-                              <SidebarMenuSubItem key={project.id} className="mt-1">
+                              <SidebarMenuSubItem
+                                key={project.id}
+                                className="mt-1"
+                              >
                                 <SidebarMenuSubButton
-                                  className={isProjectActive ? "text-primary" : "cursor-pointer"}
-                                  onClick={() => setProjectId(`${project.id}`)}
+                                  className={
+                                    isProjectActive
+                                      ? "text-primary"
+                                      : "cursor-pointer"
+                                  }
+                                  onClick={() => {
+                                    setProjectId(project.id);
+                                    redirect(`/gitwhiz/project`);
+                                  }}
                                 >
-                                  <div className={cn(
-                                    'rounded-sm border size-6 -ml-1 flex items-center justify-center text-sm bg-white text-primary',
-                                    {
-                                      'bg-primary text-white': isProjectActive
-                                    }
-                                  )}>
-                                    <span className="p-3">{project.name[0]}</span>
+                                  <div
+                                    className={cn(
+                                      "rounded-sm border size-6 -ml-1 flex items-center justify-center text-sm bg-white text-primary",
+                                      {
+                                        "bg-secondary text-green-800":
+                                          isProjectActive,
+                                      }
+                                    )}
+                                  >
+                                    <span className="p-3">
+                                      {project.name[0]}
+                                    </span>
                                   </div>
-                                  <span className="truncate">{project.name}</span>
-                                  {isProjectActive && <Check color={"green"} className="ml-auto" />}
+                                  <span className="truncate">
+                                    {project.name}
+                                  </span>
                                 </SidebarMenuSubButton>
                               </SidebarMenuSubItem>
                             );
@@ -131,5 +145,5 @@ export function NavMain({
         })}
       </SidebarMenu>
     </SidebarGroup>
-  )
+  );
 }
