@@ -2,46 +2,44 @@
 
 import React from "react";
 import ArchieveButton from "@/components/gitWhiz/dashboard/archieve-button";
-import GitHubBadge from "@/components/gitWhiz/dashboard/github-badge";
 import useProject from "@/hooks/use-project";
-import { CalendarDays, User, Users } from "lucide-react";
+import { BookCopy, CalendarDays, ExternalLink } from "lucide-react";
+import Link from "next/link";
 
 function ProjectInfo() {
   const { project } = useProject();
 
   return (
     <div>
-      <header className="mb-8 p-4 border rounded-lg bg-gray-50/50">
-        {/* Top Row for Title and Actions */}
-        <div className="flex items-center justify-between flex-wrap gap-y-4 mb-4 pb-4 border-b">
-          {project?.githubUrl && <GitHubBadge project={project} />}
-          <div className="flex items-center gap-2">
-            <ArchieveButton projectId={project?.id} />
-          </div>
-        </div>
-        {/* Metadata Row */}
-        <div className="flex items-center flex-wrap gap-x-6 gap-y-2 text-sm text-gray-600">
-          {/* Author */}
+      <header className="p-2 mb-4 border rounded-lg bg-white/80 shadow-sm">
+        <div className="flex items-center text-sm text-gray-600 justify-between">
+          {/* Name */}
           <div className="flex items-center gap-2 font-medium">
-            <User className="w-4 h-4 text-gray-400" />
-            <span>{project?.author || "Author Name"}</span>
+            <BookCopy className="size-5 text-green-800" />
+            <span>{project?.name || "Project Name"}</span>
           </div>
-          {/* Collaborators */}
-          <div className="flex items-center gap-2">
-            <Users className="w-4 h-4 text-gray-400" />
-            <strong className="font-medium">Collaborators:</strong>
-            {/* Placeholder for collaborators */}
-            <div className="flex -space-x-2 overflow-hidden"></div>
-          </div>
-          {/* Created At */}
-          <div className="flex items-center gap-2">
-            <CalendarDays className="w-4 h-4 text-gray-400" />
-            <strong className="font-medium">Created:</strong>
-            <span>
-              {project
-                ? new Date(project?.createAt).toLocaleDateString()
-                : "N/A"}
-            </span>
+
+          <div className="flex justify-between items-center gap-4 ">
+            {/* Created At */}
+            <div className="flex items-center gap-2 p-1.5 ">
+              <CalendarDays className="size-5 text-gray-400" />
+              <span className="text-thin font-code">
+                {project
+                  ? new Date(project?.createAt).toLocaleDateString()
+                  : "N/A"}
+              </span>
+            </div>
+
+            <ArchieveButton projectId={project?.id} />
+
+            <Link
+              href={project?.githubUrl ?? ""}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-normal hover:bg-secondary/40 bg-white p-1.5 rounded-md border border-sidebar"
+            >
+              <ExternalLink className="size-5 text-green-800" />
+            </Link>
           </div>
         </div>
       </header>
