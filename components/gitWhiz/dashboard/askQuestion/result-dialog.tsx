@@ -116,11 +116,11 @@ function ResultDialog({
                       <Skeleton className="h-4 w-11/12" />
                     </div>
                   ) : (
-                    <div className="overflow-y-auto bg-black h-full scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-200">
+                    <div className="overflow-y-auto h-full bg-editor scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-200">
                       <MDEditor.Markdown
                         source={answer || "The AI did not provide a response."}
                         data-color-mode="light"
-                        className="w-full p-4 pb-0 rounded-lg"
+                        className="w-full h-full p-4 pb-0 rounded-lg"
                       />
                     </div>
                   )}

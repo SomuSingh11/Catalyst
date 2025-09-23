@@ -53,7 +53,7 @@ function GitwhizCard({
   };
   return (
     <div>
-      <Card className="relative col-span-3 overflow-hidden border border-gray-300 shadow bg-slate-50/50">
+      <Card className="relative col-span-3 overflow-hidden border border-gray-300 shadow">
         <CardHeader className="relative ">
           <CardTitle className="flex items-center gap-3 text-xl">
             <div className="p-2 bg-secondary rounded-xl shadow">
