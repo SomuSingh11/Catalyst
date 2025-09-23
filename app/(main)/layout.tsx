@@ -18,7 +18,7 @@ const MainLayout = async ({ children }: { children: React.ReactNode }) => {
           <div className="h-4 flex-shrink-0"></div>
 
           {/* Main content area - Takes remaining space */}
-          <div className="border shadow rounded-md flex-1 p-6 overflow-auto h-[calc(100vh-10rem)]">
+          <div className="border shadow rounded-md flex-1 overflow-auto ">
             {children}
           </div>
         </main>

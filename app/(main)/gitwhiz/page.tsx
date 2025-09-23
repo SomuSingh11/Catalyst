@@ -32,7 +32,7 @@ export default function Page() {
   };
 
   return (
-    <div>
+    <div className="p-6">
       <Dialog open={isCreateModelOpen} onOpenChange={setIsCreateModelOpen}>
         <DialogContent className="">
           <DialogHeader>

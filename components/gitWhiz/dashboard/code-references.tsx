@@ -25,7 +25,7 @@ const CodeReferences = ({ fileReferences }: codeReferencesProps) => {
         onValueChange={setTab}
         className="w-full h-full flex flex-col"
       >
-        <TabsList className="overflow-x-auto scrollbar-hide flex gap-2 bg-gray-200 rounded-md w-full justify-start">
+        <TabsList className="overflow-x-auto flex gap-2 bg-gray-200 h-10 scrollbar-thin rounded-md w-full justify-center">
           {fileReferences.map((file) => (
             <TabsTrigger
               key={file.fileName}
@@ -46,7 +46,23 @@ const CodeReferences = ({ fileReferences }: codeReferencesProps) => {
             >
               <div className="border rounded-md overflow-hidden">
                 <SyntaxHighlighter
-                  language="typescript"
+                  language={
+                    file?.fileName?.endsWith(".tsx") ||
+                    file?.fileName?.endsWith(".ts")
+                      ? "typescript"
+                      : file?.fileName?.endsWith(".jsx") ||
+                        file?.fileName?.endsWith(".js")
+                      ? "javascript"
+                      : file?.fileName?.endsWith(".py")
+                      ? "python"
+                      : file?.fileName?.endsWith(".css")
+                      ? "css"
+                      : file?.fileName?.endsWith(".html")
+                      ? "html"
+                      : file?.fileName?.endsWith(".json")
+                      ? "json"
+                      : "text"
+                  }
                   style={lucario}
                   customStyle={{
                     margin: 0,
@@ -54,6 +70,10 @@ const CodeReferences = ({ fileReferences }: codeReferencesProps) => {
                     fontSize: "14px",
                   }}
                   showLineNumbers={true}
+                  wrapLines={true}
+                  lineProps={{
+                    style: { wordBreak: "break-word", whiteSpace: "pre-wrap" },
+                  }}
                 >
                   {file.sourceCode}
                 </SyntaxHighlighter>

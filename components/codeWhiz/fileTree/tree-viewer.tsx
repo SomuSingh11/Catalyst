@@ -41,9 +41,9 @@ const FileTreeView = ({
 
         if (node.type === "folder") {
           return (
-            <div key={node.name} style={{ marginLeft: `${level * 16}px` }}>
+            <div key={node.name} style={{ marginLeft: `${level * 10}px` }}>
               <div
-                className="flex items-center p-1 cursor-pointer rounded-md hover:bg-gray-700"
+                className="flex items-center p-1 cursor-pointer rounded-md hover:bg-gray-300/50"
                 onClick={() => toggleFolder(node.name)}
               >
                 <div className="flex items-center justify-center w-4 h-4 mr-1">
@@ -62,12 +62,14 @@ const FileTreeView = ({
               </div>
 
               {isFolderOpen && (
-                <FileTreeView
-                  tree={node.children}
-                  onFileSelect={onFileSelect}
-                  selectedFileId={selectedFileId}
-                  level={level + 1}
-                />
+                <div className="ml-3 border-l border-gray-600/15">
+                  <FileTreeView
+                    tree={node.children}
+                    onFileSelect={onFileSelect}
+                    selectedFileId={selectedFileId}
+                    level={level + 1}
+                  />
+                </div>
               )}
             </div>
           );
@@ -76,9 +78,9 @@ const FileTreeView = ({
           return (
             <div
               key={node.id}
-              style={{ marginLeft: `${level * 16 + 19}px` }}
-              className={`flex items-center p-1 cursor-pointer font-light rounded-md hover:bg-gray-700 ${
-                isSelected ? "bg-blue-800/50" : ""
+              style={{ marginLeft: `${level * 10 + 21}px` }}
+              className={`flex items-center p-1 cursor-pointer font-light rounded-md hover:bg-gray-300/50  ${
+                isSelected ? "bg-gray-300/30" : ""
               }`}
               onClick={() => onFileSelect(node)}
             >
