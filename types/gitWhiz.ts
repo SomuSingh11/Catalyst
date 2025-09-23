@@ -23,3 +23,26 @@ export type WhizSavedQuestion = {
   whizProjectId: string;
   userId: string;
 };
+
+export type sourceFile = {
+  id: string;
+  sourceCode: string;
+  fileName: string;
+  summary: string | null;
+  whizProjectId: string;
+};
+
+export type FileNode = sourceFile & {
+  type: "file";
+  name: string;
+};
+
+export type FolderNode = {
+  type: "folder";
+  name: string;
+  children: FileTree;
+};
+
+export type FileTree = {
+  [key: string]: FileNode | FolderNode;
+};
