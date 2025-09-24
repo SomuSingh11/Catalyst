@@ -170,7 +170,7 @@ function CodeBlock({
       </div>
 
       {/* Code Block */}
-      <div className="flex-1 min-h-0 overflow-y-auto">
+      <div className="flex-1 min-h-0">
         <Highlight code={code ?? ""} language={language} theme={selectedTheme}>
           {({ className, style, tokens, getLineProps, getTokenProps }) => (
             <pre
@@ -183,6 +183,7 @@ function CodeBlock({
                 height: "100%",
                 padding: "12px",
                 overflowX: "auto",
+                overflowY: "auto",
                 whiteSpace: "pre-wrap",
                 wordBreak: "break-word",
               }}

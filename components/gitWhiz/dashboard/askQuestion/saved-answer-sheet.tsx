@@ -18,14 +18,14 @@ function SavedAnswerSheet({ question }: SavedAnswerSheetProps) {
       onOpenAutoFocus={(e) => e.preventDefault()}
     >
       {/* Header */}
-      <SheetHeader className="flex-shrink-0 pb-4 border-b border-gray-300">
-        <SheetTitle className="sr-only">Saved Question Details</SheetTitle>{" "}
+      <SheetHeader className="flex-shrink-0 border-gray-300">
+        <SheetTitle className="sr-only">Saved Question Details</SheetTitle>
         <SavedAnswerHeader question={question} />
       </SheetHeader>
 
       {/* Content */}
       <Tabs defaultValue="answer" className="flex-1 min-h-0 flex flex-col">
-        <TabsList className="flex gap-2 bg-white py-2 rounded-md w-full justify-center">
+        <TabsList className="flex-shrink-0 flex gap-2 bg-white py-2 rounded-md w-full justify-center mb-4">
           <TabsTrigger value="answer" className="bg-gray-200">
             <BirdIcon className="mr-2 size-4" /> AI Response
           </TabsTrigger>
@@ -39,33 +39,32 @@ function SavedAnswerSheet({ question }: SavedAnswerSheetProps) {
         </TabsList>
 
         {/* AI Response Panel */}
-        <TabsContent value="answer" className="flex-1 min-h-0 mt-2">
+        <TabsContent value="answer" className="flex-1 min-h-0 m-0 p-0">
           <div className="bg-white border border-gray-200 rounded-lg h-full">
-            <div className="overflow-y-auto bg-editor h-full scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-200">
+            <div className="overflow-y-auto bg-editor h-full scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-200 rounded-lg">
               <MDEditor.Markdown
                 source={question.answer || "The AI did not provide a response."}
                 data-color-mode="light"
-                className="w-full h-full p-4 pb-0 rounded-lg"
+                className="w-full p-4 pb-0 rounded-lg"
               />
             </div>
           </div>
         </TabsContent>
 
         {/* Referenced Files Panel */}
-        <TabsContent
-          value="references"
-          className="flex-1 min-h-0 overflow-y-auto scrollbar-thin mt-2"
-        >
+        <TabsContent value="references" className="flex-1 min-h-0 m-0 p-0">
           {Array.isArray(question?.filesReferences) &&
           question.filesReferences.length > 0 ? (
-            <CodeReferences
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              fileReferences={question.filesReferences as any}
-            />
+            <div className="h-full rounded-lg overflow-y-auto scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-200">
+              <CodeReferences
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                fileReferences={question.filesReferences as any}
+              />
+            </div>
           ) : (
             <div className="flex flex-col items-center justify-center h-full text-center text-sm text-gray-500">
               <FileX className="size-8 mb-2" />
-              <p>No files were referenced for this Respose.</p>
+              <p>No files were referenced for this Response.</p>
             </div>
           )}
         </TabsContent>
