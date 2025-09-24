@@ -12,12 +12,13 @@ import { FileNode } from "@/types/gitWhiz";
 
 import { ChevronDown, SidebarClose, SidebarOpen } from "lucide-react";
 import AnalyzerTab from "@/components/codeWhiz/analyzer/analyzer-tab";
+import FileTreeSkeleton from "@/components/utilities/filetree-skeleton";
 
 function AnalyzerPage() {
   const [selectedFile, setSelectedFile] = React.useState<FileNode | null>(null);
   const [isSidebarOpen, setIsSidebarOpen] = React.useState(true);
 
-  const { projectId } = useProject();
+  const { projectId, project } = useProject();
   const { data: sourceFiles } = api.whizProject.getSourceFiles.useQuery({
     projectId,
   });
@@ -41,14 +42,18 @@ function AnalyzerPage() {
         >
           <p className="pb-2 font-display flex items-center text-lg gap-2 border-b">
             <ChevronDown className="text-gray-400 h-4 w-4" />
-            CodeWhiz Explorer
+            {project?.name || "Project"}
           </p>
           <div className="pt-2">
-            <FileTreeView
-              tree={fileTree}
-              onFileSelect={handleFileSelect}
-              selectedFileId={selectedFile?.id || null}
-            />
+            {Object.keys(fileTree).length === 0 ? (
+              <FileTreeSkeleton />
+            ) : (
+              <FileTreeView
+                tree={fileTree}
+                onFileSelect={handleFileSelect}
+                selectedFileId={selectedFile?.id || null}
+              />
+            )}
           </div>
         </aside>
       </div>

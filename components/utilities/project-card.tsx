@@ -3,6 +3,7 @@ import { Card, CardContent } from "../ui/card";
 import { Project } from "@/types/gitWhiz";
 import { Skeleton } from "../ui/skeleton";
 import ArchieveButton from "../gitWhiz/dashboard/archieve-button";
+import AnalyzerButton from "../codeWhiz/analyzer/analyzer-button";
 
 interface ProjectCardProps {
   isCreateCard?: boolean;
@@ -50,7 +51,7 @@ export default function ProjectCard({
 
   return (
     <Card
-      className="h-64 hover:bg-sidebar-accent transition-all cursor-pointer flex flex-col group"
+      className="h-64 hover:bg-gray-100/40 transition-all cursor-pointer flex flex-col group"
       onClick={onClick ? () => onClick(project as Project) : undefined}
     >
       {/* Content section - takes most space */}
@@ -69,6 +70,10 @@ export default function ProjectCard({
           {/* Hover button - appears only on card hover */}
           <ArchieveButton
             className="absolute top-0 right-2 opacity-0 group-hover:opacity-100 transition-opacity group-hover:bg-red-500/10"
+            projectId={project?.id}
+          />
+          <AnalyzerButton
+            className="absolute top-0 right-14 opacity-0 group-hover:opacity-100 transition-opacity group-hover:bg-secondary/20"
             projectId={project?.id}
           />
         </div>
