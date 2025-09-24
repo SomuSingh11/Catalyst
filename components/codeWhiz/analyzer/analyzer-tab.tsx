@@ -4,8 +4,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Code2, LetterText } from "lucide-react";
 import MDEditor from "@uiw/react-md-editor";
 import { FileNode } from "@/types/gitWhiz";
-import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
-import { lucario } from "react-syntax-highlighter/dist/esm/styles/prism";
+import CodeBlock from "@/components/utilities/code-block";
 
 interface AnalyzerTabProps {
   file: FileNode | null;
@@ -32,7 +31,7 @@ function AnalyzerTab({ file }: AnalyzerTabProps) {
           value="code"
           className="flex-1 min-h-0 overflow-y-auto scrollbar-thin mt-2 rounded-lg"
         >
-          <SyntaxHighlighter
+          {/* <SyntaxHighlighter
             language={
               file?.name?.endsWith(".tsx") || file?.name?.endsWith(".ts")
                 ? "typescript"
@@ -62,7 +61,12 @@ function AnalyzerTab({ file }: AnalyzerTabProps) {
             }}
           >
             {file?.sourceCode ?? ""}
-          </SyntaxHighlighter>
+          </SyntaxHighlighter> */}
+
+          <CodeBlock
+            code={file?.sourceCode ?? ""}
+            fileName={file?.name ?? ""}
+          />
         </TabsContent>
 
         {/* Summary Panel */}

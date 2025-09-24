@@ -36,7 +36,7 @@ function AnalyzerPage() {
     <div className="flex h-full w-full">
       <div>
         <aside
-          className={`h-full overflow-y-auto bg-sidebar border border-gray-300 rounded-md transition-all duration-300 ease-in-out ${
+          className={`h-full flex flex-col overflow-y-auto bg-sidebar border border-gray-300 rounded-md transition-all duration-300 ease-in-out ${
             isSidebarOpen ? "w-80 p-2" : "w-0"
           }`}
         >
@@ -44,7 +44,7 @@ function AnalyzerPage() {
             <ChevronDown className="text-gray-400 h-4 w-4" />
             {project?.name || "Project"}
           </p>
-          <div className="pt-2">
+          <div className="pt-2 overflow-auto">
             {Object.keys(fileTree).length === 0 ? (
               <FileTreeSkeleton />
             ) : (
