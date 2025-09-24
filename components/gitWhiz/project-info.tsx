@@ -6,6 +6,7 @@ import useProject from "@/hooks/use-project";
 import { BookCopy, CalendarDays, ExternalLink } from "lucide-react";
 import Link from "next/link";
 import { Skeleton } from "../ui/skeleton";
+import AnalyzerButton from "../codeWhiz/analyzer/analyzer-button";
 
 function ProjectInfo() {
   const { project, isLoading } = useProject();
@@ -40,14 +41,15 @@ function ProjectInfo() {
             </div>
 
             <ArchieveButton projectId={project?.id} />
+            <AnalyzerButton projectId={project?.id} />
 
             <Link
               href={project?.githubUrl ?? ""}
               target="_blank"
               rel="noopener noreferrer"
-              className="font-normal hover:bg-secondary/40 bg-white p-1.5 rounded-md border border-sidebar"
+              className="font-normal hover:bg-gray-200/20 bg-white p-1.5 rounded-md border border-sidebar"
             >
-              <ExternalLink className="size-5 text-green-800" />
+              <ExternalLink className="size-5 text-gray-500/80" />
             </Link>
           </div>
         </div>

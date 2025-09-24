@@ -1,7 +1,7 @@
 import { TRPCError } from "@trpc/server";
 import { createTRPCRouter, protectedProcedure } from "@/server/api/trpc";
 import { z } from "zod";
-import { pollCommits } from "@/lib/github";
+import { pollCommits } from "@/lib/github-commits";
 import { indexGithubRepo } from "@/lib/github-loader";
 
 export const projectRouter = createTRPCRouter({
