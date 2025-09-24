@@ -71,14 +71,14 @@ function ResultDialog({
   return (
     <Dialog open={isOpen} onOpenChange={setOpen}>
       <DialogContent className="max-w-[80vw] h-[90vh] flex flex-col bg-white">
-        <DialogHeader className="border-b pb-4 flex-shrink-0">
+        <DialogHeader className="border-b pb-2 flex-shrink-0">
           <DialogTitle className="flex items-center gap-3">
             <AskQuestionHeader loading={loading} />
           </DialogTitle>
         </DialogHeader>
 
         <div className="flex flex-col flex-1 gap-4 min-h-0">
-          <div className="flex-1 overflow-auto flex flex-col gap-4 p-2">
+          <div className="flex-1 overflow-auto flex flex-col gap-4 ">
             {/* Question */}
             <div className="bg-secondary/15 text-green-800 rounded-lg p-4 border-l-4 border-green-900 flex-shrink-0">
               <div className="flex items-start gap-2">
@@ -116,7 +116,7 @@ function ResultDialog({
                       <Skeleton className="h-4 w-11/12" />
                     </div>
                   ) : (
-                    <div className="overflow-y-auto h-full bg-editor scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-200">
+                    <div className="rounded-lg overflow-y-auto h-full bg-editor scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-200">
                       <MDEditor.Markdown
                         source={answer || "The AI did not provide a response."}
                         data-color-mode="light"
@@ -130,7 +130,7 @@ function ResultDialog({
               {/* Referenced Files Panel */}
               <TabsContent
                 value="references"
-                className="flex-1 min-h-0 overflow-y-auto scrollbar-thin mt-2"
+                className="flex-1 min-h-0 overflow-y-auto scrollbar-thin mt-2 rounded-lg"
               >
                 {filesReferences.length > 0 ? (
                   <CodeReferences fileReferences={filesReferences} />

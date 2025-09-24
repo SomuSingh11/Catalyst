@@ -70,7 +70,7 @@ interface CodeBlockProps {
 function CodeBlock({
   code,
   fileName,
-  theme: initialTheme = "vsDark",
+  theme: initialTheme = "nightOwl",
 }: CodeBlockProps) {
   const [theme, setTheme] = React.useState<ThemeName>(initialTheme);
 
