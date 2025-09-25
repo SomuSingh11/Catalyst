@@ -96,6 +96,7 @@ model WhizProject{
   name          String
   githubUrl     String
   githubToken   String?
+  status        String @default("pending") 
 
   createAt      DateTime @default(now())
   updatedAt     DateTime @updatedAt

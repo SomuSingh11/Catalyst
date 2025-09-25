@@ -327,7 +327,9 @@ const saveEmbeddingsToDB = async (embeddings: any[], projectId: string) => {
 
       savedCount++;
       console.log(
-        `✅ [${index + 1}/${embeddings.length}] Saved: ${embedding.fileName}`
+        `✅ [${index + 1}/${embeddings.length}] Saved: ${
+          embedding.embedding.metadata.source
+        }`
       );
     } catch (error: any) {
       failedCount++;

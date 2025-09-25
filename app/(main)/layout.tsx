@@ -1,9 +1,10 @@
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/app-sidebar";
 import { BreadcrumbHeader } from "@/components/breadcrumb-header";
-// import { initialProfile } from "@/lib/intital-profile";
+import { initialProfile } from "@/lib/intital-profile";
 
 const MainLayout = async ({ children }: { children: React.ReactNode }) => {
+  await initialProfile();
   return (
     <SidebarProvider>
       <div className="flex h-screen w-full">
