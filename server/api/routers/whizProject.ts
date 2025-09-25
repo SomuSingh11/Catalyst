@@ -2,7 +2,7 @@ import { TRPCError } from "@trpc/server";
 import { createTRPCRouter, protectedProcedure } from "@/server/api/trpc";
 import { z } from "zod";
 import { pollCommits } from "@/lib/github-commits";
-import { indexGithubRepo } from "@/lib/github-loader";
+import { indexGithubRepo } from "@/lib/github-indexer";
 
 export const projectRouter = createTRPCRouter({
   createProject: protectedProcedure
@@ -36,7 +36,8 @@ export const projectRouter = createTRPCRouter({
         },
       });
 
-      await indexGithubRepo(project.id, input.githubUrl, input.githubToken);
+      // await indexGithubRepo(project.id, input.githubUrl, input.githubToken);
+      await indexGithubRepo(project.id, input.githubUrl);
       await pollCommits(project.id);
       return project;
     }),
