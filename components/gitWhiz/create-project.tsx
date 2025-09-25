@@ -37,8 +37,8 @@ const CreateProject = () => {
           toast.success("Project created successfully");
           utils.whizProject.getProjects.invalidate();
           reset();
-          setProjectId(createdProject.id);
-          router.push("/gitwhiz/dashboard");
+          setProjectId(createdProject.project.id);
+          router.push("/gitwhiz/project?index=true");
         },
         onError: () => {
           toast.error("Error while creating project");
@@ -66,19 +66,22 @@ const CreateProject = () => {
             {...register("repoUrl", { required: true })}
             placeholder="GitHub Repo URL (e.g., https://github.com/user/repo)"
           />
-          <Input
+          {/* <Input
             {...register("githubToken")}
             placeholder="Personal Access Token (optional)"
-          />
+          /> */}
           <Button
             type="submit"
             disabled={createProject.isPending}
-            className="w-full mt-4 bg-secondary/80 text-green-800 hover:bg-secondary hover:text-green-900 transition-colors"
+            className="w-full mt-6 bg-secondary/80 text-green-800 hover:bg-secondary hover:text-green-900 transition-colors"
           >
             {createProject.isPending ? (
-              <Loader2 className="animate-spin" />
+              <>
+                <Loader2 className="animate-spin" />
+                <span>Analyzing Repository...</span>
+              </>
             ) : (
-              "Link Repository"
+              "Analyze Repository"
             )}
           </Button>
         </form>

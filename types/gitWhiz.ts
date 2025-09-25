@@ -32,6 +32,7 @@ export type sourceFile = {
   whizProjectId: string;
 };
 
+// File tree structure (for representing the directory structure of a project)
 export type FileNode = sourceFile & {
   type: "file";
   name: string;
@@ -46,3 +47,30 @@ export type FolderNode = {
 export type FileTree = {
   [key: string]: FileNode | FolderNode;
 };
+
+// Tracking status of Project indexing process
+export interface IndexingProgress {
+  status:
+    | "initialising"
+    | "cloning"
+    | "processing"
+    | "saving"
+    | "completed"
+    | "pending"
+    | "idle"
+    | "connected"
+    | "error";
+  message: string;
+  current?: number;
+  total?: number;
+  currentFile?: string;
+  percentage?: number;
+  error?: string;
+  stats?: {
+    totalFiles: number;
+    embeddingsGenerated: number;
+    savedToDatabase: number;
+    failed: number;
+    processingTimeSeconds: number;
+  } | null;
+}

@@ -2,7 +2,6 @@ import { TRPCError } from "@trpc/server";
 import { createTRPCRouter, protectedProcedure } from "@/server/api/trpc";
 import { z } from "zod";
 import { pollCommits } from "@/lib/github-commits";
-import { indexGithubRepo } from "@/lib/github-indexer";
 
 export const projectRouter = createTRPCRouter({
   createProject: protectedProcedure
@@ -23,23 +22,32 @@ export const projectRouter = createTRPCRouter({
         throw new TRPCError({ code: "NOT_FOUND", message: "User not found" });
       }
 
-      const project = await ctx.db.whizProject.create({
-        data: {
-          githubUrl: input.githubUrl,
-          githubToken: input.githubToken,
-          name: input.name,
-          userToProjects: {
-            create: {
-              userId: dbUser.id,
+      try {
+        const project = await ctx.db.whizProject.create({
+          data: {
+            githubUrl: input.githubUrl,
+            githubToken: input.githubToken,
+            name: input.name,
+            status: "pending",
+            userToProjects: {
+              create: {
+                userId: dbUser.id,
+              },
             },
           },
-        },
-      });
+        });
 
-      // await indexGithubRepo(project.id, input.githubUrl, input.githubToken);
-      await indexGithubRepo(project.id, input.githubUrl);
-      await pollCommits(project.id);
-      return project;
+        // await indexGithubRepo(project.id, input.githubUrl, input.githubToken);
+        // await indexGithubRepo(project.id, input.githubUrl);
+        await pollCommits(project.id);
+        return { project, indexingUrl: `/api/indexer?projectId=${project.id}` };
+      } catch (error) {
+        console.error("Error creating project:", error);
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Failed to create project",
+        });
+      }
     }),
 
   getProjects: protectedProcedure.query(async ({ ctx }) => {

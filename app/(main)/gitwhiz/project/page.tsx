@@ -4,6 +4,7 @@ import CommitLog from "@/components/gitWhiz/dashboard/commit-log";
 import QAPage from "../qa/page";
 import ProjectInfo from "@/components/gitWhiz/project-info";
 import CommitHeader from "@/components/utilities/commit-heading";
+import ProjectIndexingPage from "@/components/gitWhiz/dashboard/project-indexing";
 
 function ProjectPage() {
   return (
@@ -18,6 +19,7 @@ function ProjectPage() {
           <CommitLog />
         </div>
       </div>
+      <ProjectIndexingPage />
     </div>
   );
 }
