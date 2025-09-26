@@ -1,4 +1,9 @@
 import { Button } from "@/components/ui/button";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 import { api } from "@/trpc/react";
 import { Trash } from "lucide-react";
@@ -42,23 +47,30 @@ const ArchieveButton = ({ className, projectId }: ArchieveButtonProps) => {
   };
 
   return (
-    <Button
-      disabled={archieveProject.isPending || !projectId}
-      size="sm"
-      variant={"ghost"}
-      className={cn(
-        "h-8 w-8 p-0 bg-white/80 hover:bg-red-500/10 shadow-sm",
-        "disabled:opacity-50 disabled:cursor-not-allowed",
-        className
-      )}
-      // Updated onClick handler
-      onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
-        e.stopPropagation(); // This stops the click from reaching the parent card
-        handleArchive();
-      }}
-    >
-      <Trash className="h-4 w-4 text-red-500" />
-    </Button>
+    <Tooltip>
+      <TooltipTrigger>
+        <Button
+          disabled={archieveProject.isPending || !projectId}
+          size="sm"
+          variant={"ghost"}
+          className={cn(
+            "h-8 w-8 p-0 bg-white/80 hover:bg-red-500/10 shadow-sm",
+            "disabled:opacity-50 disabled:cursor-not-allowed",
+            className
+          )}
+          // Updated onClick handler
+          onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
+            e.stopPropagation(); // This stops the click from reaching the parent card
+            handleArchive();
+          }}
+        >
+          <Trash className="h-4 w-4 text-red-500" />
+        </Button>
+      </TooltipTrigger>
+      <TooltipContent className="bg-secondary ml-2 text-green-800" side="right">
+        <p>Archieve Project</p>
+      </TooltipContent>
+    </Tooltip>
   );
 };
 

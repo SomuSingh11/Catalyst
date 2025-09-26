@@ -231,30 +231,30 @@ export async function summariseCode(doc: Document) {
   ## OUTPUT FORMAT
   Use the **exact markdown structure** below. Be as detailed and technical as possible within each section..  
 
-  ---
-  **Overview:** 
+
+  ## **Overview:** 
   A detailed, multi-sentence overview of this file’s role, its primary responsibilities, and how it fits into the overall application architecture.
 
-  ⚙️ **Core Functionality** A detailed sentence describing the file’s primary technical purpose.
+  ## **Core Functionality** A detailed sentence describing the file’s primary technical purpose.
 
   // Suggestion 1: Added the Architectural Pattern section
-  🏛️ **Architectural Pattern** If applicable, identify and briefly explain the software design pattern this file implements (e.g., Middleware, React Hook, Singleton, Factory). If not applicable, state "N/A".
+  ## **Architectural Pattern** If applicable, identify and briefly explain the software design pattern this file implements (e.g., Middleware, React Hook, Singleton, Factory). If not applicable, state "N/A".
 
-  🔧 **Key Abstractions & Logic**
+  ## **Key Abstractions & Logic**
   - **\`functionName(param1, param2)\`**: A detailed description of its logic, purpose, key parameters, and what it returns.
   - **\`ClassName\`**: A description of its responsibilities, key methods, and properties.
   *(List all major exported functions and classes. Do not skip important ones.)*
 
 
-  ⛓️ **Error Handling & Side Effects**
+  ## **Error Handling & Side Effects**
   - **Error Handling:** Describe how this code handles potential errors (e.g., try-catch blocks, error propagation, calls to a logging service).
   - **Side Effects:** List any important side effects (e.g., makes an API call to an external service, writes to a database, modifies global state).
 
-  🔗 **Dependencies & Interactions**
+  ## **Dependencies & Interactions**
   - **External:** List key imported libraries and briefly state what each is used for.
   - **Internal:** Explain how this file connects with the rest of the codebase in detail.
 
-  🏷️ **Technical Keywords**
+  ## **Technical Keywords**
   Single line, comma-separated, 8–15 technical keywords. Be specific.
 
   ## FINAL REVIEW

@@ -8,6 +8,9 @@ import { generateEmbedding, summariseCode } from "./gemini";
 import prisma from "@/lib/db";
 import { IndexingProgress } from "@/types/gitWhiz";
 
+// --- A simple delay helper ---
+const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
 // Retry a promise-returning function with exponential backoff
 const retryWithBackoff = async <T>(
   fn: () => Promise<T>,
@@ -286,7 +289,7 @@ const generateEmbeddings = async (
   );
 
   const embeddings = [];
-  const delayPerFile = 2400; // 2.4 seconds delay to respect rate limits
+  // const delayPerFile = 2400; // 2.4 seconds delay to respect rate limits
   const total = docs.length;
 
   for (const [index, doc] of docs.entries()) {
@@ -311,7 +314,9 @@ const generateEmbeddings = async (
     try {
       const processFile = async () => {
         const summary = await summariseCode(doc);
+        await delay(1100);
         const embedding = await generateEmbedding(summary);
+        await delay(50);
 
         return {
           summary,
@@ -332,7 +337,7 @@ const generateEmbeddings = async (
       embeddings.push(null);
     }
 
-    await new Promise((res) => setTimeout(res, delayPerFile));
+    // await new Promise((res) => setTimeout(res, delayPerFile));
   }
 
   const successfull = embeddings.filter((e) => e !== null).length;

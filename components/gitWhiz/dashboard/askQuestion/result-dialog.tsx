@@ -105,7 +105,7 @@ function ResultDialog({
 
               {/* AI Response Panel */}
               <TabsContent value="answer" className="flex-1 min-h-0 mt-2">
-                <div className="bg-white border border-gray-200 rounded-lg h-full">
+                <div className="bg-white border border-gray-200 rounded-lg h-full overflow-y-auto p-6">
                   {loading && !answer ? (
                     <div className="p-4 space-y-3">
                       <div className="animate-pulse flex items-center gap-2 text-sm text-gray-500">
@@ -116,11 +116,10 @@ function ResultDialog({
                       <Skeleton className="h-4 w-11/12" />
                     </div>
                   ) : (
-                    <div className="rounded-lg overflow-y-auto h-full bg-editor scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-200">
+                    <div data-color-mode="light">
                       <MDEditor.Markdown
                         source={answer || "The AI did not provide a response."}
-                        data-color-mode="light"
-                        className="w-full h-full p-4 pb-0 rounded-lg"
+                        className="w-full h-full"
                       />
                     </div>
                   )}
