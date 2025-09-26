@@ -29,13 +29,13 @@ const QAPage = () => {
   };
 
   return (
-    <div>
+    <div className="w-full">
       <AskQuestionCard />
       <div className="h-12"></div>
       <SavedInsights questions={questions || []} />
-      <div className="h-6"></div>
+      <div className="h-2"></div>
       <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
-        <div className="flex flex-col gap-3">
+        <div className="flex flex-col gap-3 p-2 sm:p-4">
           {isLoading ? (
             <>
               <SavedAnswerSkeleton />
@@ -47,9 +47,9 @@ const QAPage = () => {
               <button
                 key={q.id}
                 onClick={() => handleTriggerClick(index)}
-                className="flex items-center gap-4 bg-white hover:bg-gray-50 transition-colors border rounded-lg p-4 shadow-sm text-left w-full focus:outline-none focus:ring-2 focus:ring-gray-200"
+                className="flex items-center gap-4 bg-white hover:bg-gray-50 transition-colors border rounded-lg p-1 sm:p-2 shadow-sm text-left w-full focus:outline-none focus:ring-2 focus:ring-gray-200"
               >
-                <Avatar className="w-9 h-9">
+                <Avatar className="w-9 h-9 ml-1">
                   <AvatarImage
                     src={q.user.imageUrl ?? "/default-avatar.png"}
                     alt="User Avatar"

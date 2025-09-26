@@ -126,11 +126,12 @@ function CodeBlock({
       >
         {fileName && (
           <div
-            className="px-3 py-2 text-xs font-mono opacity-80"
+            className="px-3 py-2 text-xs font-mono opacity-80 truncate overflow-hidden whitespace-nowrap"
             style={{
               backgroundColor: selectedTheme.plain.backgroundColor,
               color: selectedTheme.plain.color,
             }}
+            title={fileName}
           >
             {fileName}
           </div>
@@ -153,7 +154,7 @@ function CodeBlock({
             onValueChange={(value: ThemeName) => setTheme(value)}
           >
             <SelectTrigger
-              className="w-40 h-8 text-xs font-mono"
+              className="w-35 h-8 text-xs font-mono"
               style={{ color: selectedTheme.plain.color }}
             >
               <SelectValue />

@@ -26,7 +26,6 @@ const CommitLog = () => {
     );
   }
 
-  // No commits state
   if (!commits || commits.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-12 text-center ">
@@ -53,7 +52,7 @@ const CommitLog = () => {
       <ul className="space-y-6">
         {commits?.map((commit, commitIdx) => {
           return (
-            <li key={commit.id} className="relative flex gap-x-4">
+            <li key={commit.id} className="relative flex gap-x-3 sm:gap-x-4">
               <div
                 className={cn(
                   commitIdx === commits.length - 1 ? "h-6" : "-bottom-6",
@@ -74,10 +73,12 @@ const CommitLog = () => {
                   </AvatarFallback>
                 </Avatar>
 
-                <div className="flex-auto rounded-xl bg-white p-4 pt-2 ring-1 ring-inset ring-gray-200 shadow-sm hover:shadow-md transition-shadow">
-                  <div className="flex justify-between gap-x-4">
+                {/* Responsive padding on the main card */}
+                <div className="flex-auto rounded-xl bg-white p-3 pt-2 sm:p-4 sm:pt-2 ring-1 ring-inset ring-gray-200 shadow-sm hover:shadow-md transition-shadow max-w-full overflow-x-auto">
+                  {/* RESPONSIVE HEADER: Stacks vertically on mobile */}
+                  <div className="flex flex-col items-start gap-y-2 sm:flex-row sm:items-center sm:justify-between">
                     <div className="pb-1 text-gray-400">
-                      <User className="inline size-3.5 mr-1.5 mb-0.5" />{" "}
+                      <User className="inline size-3.5 mr-1.5 mb-0.5" />
                       <span className="text-xs">{commit.commitAuthorName}</span>
                     </div>
                     <Link
@@ -85,9 +86,8 @@ const CommitLog = () => {
                       href={`${project?.githubUrl}/commits/${commit.commitHash}`}
                       className="py-0.5 text-xs leading-5 text-gray-500"
                     >
-                      {" "}
                       <span className="inline-flex items-center">
-                        <code className="px-2 py-1 bg-gray-100 rounded text-xs font-mono text-gray-700 flex">
+                        <code className="px-2 py-1 bg-gray-100 rounded text-xs font-mono text-gray-700 flex break-all">
                           {commit.commitHash?.slice(0, 7)}
                         </code>
                         <ExternalLink className="ml-1 size-4" />
@@ -95,12 +95,13 @@ const CommitLog = () => {
                     </Link>
                   </div>
 
-                  <p className="text-xl font-semibold text-green-900 font-display leading-tight">
+                  {/* Responsive font size for the commit message */}
+                  <p className="text-lg sm:text-xl font-semibold text-green-900 font-display leading-tight break-words">
                     {commit.commitMessage}
                   </p>
 
                   <div className="mt-2 bg-gray-50 rounded-lg p-3">
-                    <pre className="whitespace-pre-wrap text-sm leading-relaxed text-gray-500 font-sans">
+                    <pre className="whitespace-pre-wrap text-sm leading-relaxed text-gray-500 font-sans break-words">
                       {commit.summary}
                     </pre>
                   </div>

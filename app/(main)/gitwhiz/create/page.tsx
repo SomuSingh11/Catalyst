@@ -38,7 +38,7 @@ const CreatePage = () => {
           toast.success("Project created successfully");
           utils.whizProject.getProjects.invalidate();
           reset();
-          setProjectId(createdProject.id);
+          setProjectId(createdProject.project.id);
           router.push("/gitwhiz/dashboard");
         },
         onError: () => {

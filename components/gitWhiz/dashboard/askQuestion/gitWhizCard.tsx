@@ -54,16 +54,18 @@ function GitwhizCard({
   return (
     <div>
       <Card className="relative col-span-3 overflow-hidden border border-gray-300 shadow">
-        <CardHeader className="relative ">
-          <CardTitle className="flex items-center gap-3 text-xl">
-            <div className="p-2 bg-secondary rounded-xl shadow">
-              <Brain className="size-8 text-green-800" />
+        <CardHeader className="relative p-4 sm:p-6">
+          <CardTitle className="flex flex-row items-center gap-3 text-lg sm:text-xl">
+            <div className="p-2 bg-secondary/20 rounded-xl shadow flex-shrink-0">
+              <Brain className="size-6 sm:size-8 text-green-800" />
             </div>
-            <div>
-              <span className="text-gray-800 font-display">Ask GitWhiz AI</span>
-              <div className="flex items-center gap-1 mt-1">
-                <Sparkles className="size-4 text-gray-600" />
-                <span className="text-sm font-normal text-gray-600">
+            <div className="min-w-0 flex-1">
+              <span className="text-gray-800 font-display block">
+                Analyze with AI
+              </span>
+              <div className="flex items-start sm:items-center gap-1 mt-0.5">
+                {/* <Sparkles className="size-4 text-gray-600 mt-0.5 sm:mt-0 flex-shrink-0" /> */}
+                <span className="text-xs sm:text-sm font-normal text-gray-600 leading-tight">
                   Get intelligent insights about your codebase
                 </span>
               </div>
@@ -72,21 +74,22 @@ function GitwhizCard({
         </CardHeader>
 
         <CardContent>
-          <form onSubmit={onSubmit} className="space-y-4">
+          <form onSubmit={onSubmit} className="space-y-5">
             <div className="space-y-3">
-              <div className="flex items-center gap-2 text-sm font-light text-gray-800 font-code pb-2">
+              <div className="flex items-center gap-2 text-sm font-light text-gray-800 font-code mt-2">
                 <Search className="size-4" />
-                What would you like to know about your project?
+                Ask anything about your codebase
               </div>
               <Textarea
-                placeholder="Ask anything about your codebase - tutorials, architecture, best practices, implementation details, or get suggestions for improvements..."
+                placeholder="Wondering how it all fits together? Start typing…"
                 value={question}
                 onChange={(e) => setQuestion(e.target.value)}
-                className="min-h-[80px] focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-slate-400 font-sans text-gray-800"
+                className="min-h-[80px] focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-slate-400 text-gray-800 placeholder:text-gray-300 placeholder:font-light"
                 disabled={loading}
               />
             </div>
-            <div className="flex items-center justify-between gap-6 pt-3">
+            <FeatureHighLights />
+            <div className="flex items-center justify-between gap-6">
               <Button
                 disabled={loading || !question.trim()}
                 variant={"ghost"}
@@ -112,12 +115,12 @@ function GitwhizCard({
                 onClick={handleSuggestedQuestionClick}
               >
                 <Sparkles className="size-5 mr-2" />
-                Quick Suggestions
+                Inspire Me
               </Button>
             </div>
           </form>
 
-          <FeatureHighLights />
+          {/* <FeatureHighLights /> */}
         </CardContent>
       </Card>
     </div>

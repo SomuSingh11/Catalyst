@@ -8,18 +8,29 @@ import ProjectIndexingPage from "@/components/gitWhiz/dashboard/project-indexing
 
 function ProjectPage() {
   return (
-    <div className="h-full w-full p-6">
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
+    <div className="h-full w-full p-2 sm:p-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8 lg:gap-12">
+        {/* Left column - Project Info and QA */}
         <div className="lg:col-span-1">
-          <ProjectInfo />
-          <QAPage />
+          <div className="space-y-4 sm:space-y-6">
+            <ProjectInfo />
+            <QAPage />
+          </div>
         </div>
-        <div className="lg:col-span-2 space-y-4">
-          <CommitHeader />
-          <CommitLog />
+
+        {/* Right column - Commits */}
+        <div className="lg:col-span-2">
+          <div className="space-y-4">
+            <CommitHeader />
+            <CommitLog />
+          </div>
         </div>
       </div>
-      <ProjectIndexingPage />
+
+      {/* Project Indexing - Full width at bottom */}
+      <div className="mt-6 sm:mt-8 lg:mt-12">
+        <ProjectIndexingPage />
+      </div>
     </div>
   );
 }

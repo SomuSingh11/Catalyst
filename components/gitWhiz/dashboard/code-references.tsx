@@ -24,7 +24,7 @@ const CodeReferences = ({ fileReferences }: codeReferencesProps) => {
         onValueChange={setTab}
         className="w-full h-full flex flex-col"
       >
-        <TabsList className="flex-shrink-0 overflow-x-auto gap-2 bg-gray-200 h-12 scrollbar-thin rounded-md w-full justify-center">
+        <TabsList className="flex-shrink-0 overflow-x-auto gap-2 bg-gray-200 h-10 scrollbar-thin rounded-md w-full justify-center">
           {fileReferences.map((file) => (
             <TabsTrigger
               key={file.fileName}

@@ -3,17 +3,21 @@ import React from "react";
 
 function CommitHeader() {
   return (
-    <div className="pb-4">
-      <div className="flex items-center gap-3">
-        <div className="bg-gray-100 p-2 rounded-lg">
-          <GitCommit className="h-5 w-5 text-gray-600" />
+    <div className="w-full pb-4">
+      <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 pt-8 sm:p-0">
+        {/* Icon */}
+        <div className="flex-shrink-0 bg-gray-100 text-gray-800 p-3 rounded-xl shadow-sm flex items-center justify-center">
+          <GitCommit className="h-6 w-6" />
         </div>
-        <div className="pl-2">
-          <p className="text-2xl font-semibold font-display text-gray-600 tracking-tight">
+
+        {/* Text */}
+        <div className="flex-1 min-w-0">
+          <p className="text-lg sm:text-2xl font-semibold font-display text-gray-800 tracking-tight truncate">
             Commit History
           </p>
-          <p className="text-sm text-gray-500 mt-0.5">
-            An AI-powered summary of recent changes to the codebase.
+          <p className="text-sm sm:text-base text-gray-500 mt-1 sm:mt-1.5 line-clamp-2">
+            An AI-powered summary of recent changes to your codebase, including
+            insights and trends.
           </p>
         </div>
       </div>

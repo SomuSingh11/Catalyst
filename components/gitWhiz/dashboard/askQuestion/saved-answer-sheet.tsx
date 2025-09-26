@@ -14,7 +14,7 @@ interface SavedAnswerSheetProps {
 function SavedAnswerSheet({ question }: SavedAnswerSheetProps) {
   return (
     <SheetContent
-      className="sm:max-w-[80vw] flex flex-col h-full p-6 bg-white border-l border-gray-300"
+      className="sm:max-w-[80vw] w-full flex flex-col h-full p-4 sm:p-6 bg-white border-l border-gray-300"
       onOpenAutoFocus={(e) => e.preventDefault()}
     >
       {/* Header */}
@@ -40,12 +40,11 @@ function SavedAnswerSheet({ question }: SavedAnswerSheetProps) {
 
         {/* AI Response Panel */}
         <TabsContent value="answer" className="flex-1 min-h-0 m-0 p-0">
-          <div className="bg-white border border-gray-200 rounded-lg h-full">
-            <div className="overflow-y-auto bg-editor h-full scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-200 rounded-lg">
+          <div className="bg-white border border-gray-200 rounded-lg h-full overflow-y-auto p-3 sm:p-4">
+            <div data-color-mode="light">
               <MDEditor.Markdown
                 source={question.answer || "The AI did not provide a response."}
-                data-color-mode="light"
-                className="w-full p-4 pb-0 rounded-lg"
+                className="w-full h-full"
               />
             </div>
           </div>

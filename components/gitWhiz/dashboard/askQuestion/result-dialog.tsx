@@ -70,21 +70,23 @@ function ResultDialog({
 
   return (
     <Dialog open={isOpen} onOpenChange={setOpen}>
-      <DialogContent className="max-w-[80vw] h-[90vh] flex flex-col bg-white">
-        <DialogHeader className="border-b pb-2 flex-shrink-0">
+      <DialogContent className="max-w-[95vw] sm:max-w-[85vw] lg:max-w-[80vw] h-[90vh] sm:h-[90vh] flex flex-col bg-white p-3 sm:p-6">
+        <DialogHeader className="border-b pb-2 sm:pb-3 flex-shrink-0">
           <DialogTitle className="flex items-center gap-3">
             <AskQuestionHeader loading={loading} />
           </DialogTitle>
         </DialogHeader>
 
-        <div className="flex flex-col flex-1 gap-4 min-h-0">
-          <div className="flex-1 overflow-auto flex flex-col gap-4 ">
+        <div className="flex flex-col flex-1 gap-3 sm:gap-4 min-h-0">
+          <div className="flex-1 overflow-auto flex flex-col gap-3 sm:gap-4">
             {/* Question */}
-            <div className="bg-secondary/15 text-green-800 rounded-lg p-4 border-l-4 border-green-900 flex-shrink-0">
+            <div className="bg-secondary/15 text-green-800 rounded-lg p-2 sm:p-4 border-l-4 border-green-900 flex-shrink-0">
               <div className="flex items-start gap-2">
-                <MessageCircleQuestion className="size-5 text-gray-800 mt-0.5 flex-shrink-0" />
-                <div>
-                  <p className="text-gray-700">{question}</p>
+                <MessageCircleQuestion className="size-4 sm:size-5 text-gray-800 mt-1 sm:mt-0.5 flex-shrink-0" />
+                <div className="min-w-0 flex-1">
+                  <p className="text-gray-700 text-sm sm:text-base leading-relaxed break-words">
+                    {question}
+                  </p>
                 </div>
               </div>
             </div>
@@ -105,9 +107,9 @@ function ResultDialog({
 
               {/* AI Response Panel */}
               <TabsContent value="answer" className="flex-1 min-h-0 mt-2">
-                <div className="bg-white border border-gray-200 rounded-lg h-full overflow-y-auto p-6">
+                <div className="bg-white border border-gray-200 rounded-lg h-full overflow-y-auto p-3 sm:p-4">
                   {loading && !answer ? (
-                    <div className="p-4 space-y-3">
+                    <div className="space-y-3">
                       <div className="animate-pulse flex items-center gap-2 text-sm text-gray-500">
                         <Loader2 className="size-4 animate-spin" />
                         Analyzing your codebase and generating insights...
