@@ -67,7 +67,7 @@ const ArchieveButton = ({ className, projectId }: ArchieveButtonProps) => {
           <Trash className="h-4 w-4 text-red-500" />
         </Button>
       </TooltipTrigger>
-      <TooltipContent className="bg-secondary ml-2 text-green-800" side="right">
+      <TooltipContent className="bg-secondary text-green-800" side="top">
         <p>Archieve Project</p>
       </TooltipContent>
     </Tooltip>

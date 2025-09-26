@@ -39,7 +39,7 @@ const AnalyzerButton = ({ className, projectId }: ArchieveButtonProps) => {
           <Sparkles className="h-4 w-4 text-green-900" />
         </Button>
       </TooltipTrigger>
-      <TooltipContent className="bg-secondary ml-2 text-green-800" side="right">
+      <TooltipContent className="bg-secondary text-green-800" side="top">
         <p>CodeWhiz Analyzer</p>
       </TooltipContent>
     </Tooltip>
