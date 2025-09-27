@@ -39,7 +39,7 @@ export const projectRouter = createTRPCRouter({
 
         // await indexGithubRepo(project.id, input.githubUrl, input.githubToken);
         // await indexGithubRepo(project.id, input.githubUrl);
-        await pollCommits(project.id);
+        pollCommits(project.id);
         return { project, indexingUrl: `/api/indexer?projectId=${project.id}` };
       } catch (error) {
         console.error("Error creating project:", error);
