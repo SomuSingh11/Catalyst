@@ -10,7 +10,12 @@ import useProject from "@/hooks/use-project";
 
 import { FileNode } from "@/types/gitWhiz";
 
-import { ChevronDown, SidebarClose, SidebarOpen } from "lucide-react";
+import {
+  ArrowLeft,
+  ChevronDown,
+  SidebarClose,
+  SidebarOpen,
+} from "lucide-react";
 import AnalyzerTab from "@/components/codeWhiz/analyzer/analyzer-tab";
 import FileTreeSkeleton from "@/components/utilities/filetree-skeleton";
 
@@ -32,52 +37,106 @@ function AnalyzerPage() {
     setSelectedFile(node);
   };
 
+  const handleBackToSidebar = () => {
+    setSelectedFile(null);
+  };
+
   return (
-    <div className="flex h-full w-full">
-      <div>
-        <aside
-          className={`h-full flex flex-col overflow-y-auto bg-sidebar border border-gray-300 rounded-md transition-all duration-300 ease-in-out ${
-            isSidebarOpen ? "w-80 p-2" : "w-0"
-          }`}
+    <div className="flex h-full w-full max-w-full overflow-hidden">
+      <aside
+        className={`
+          h-full bg-white border-r border-gray-200 flex-col flex-shrink-0
+          w-full md:w-auto 
+          ${selectedFile ? "hidden md:flex" : "flex"}
+          ${
+            isSidebarOpen
+              ? "md:min-w-80 md:max-w-80"
+              : "md:w-0 md:min-w-0 md:max-w-0"
+          }
+          transition-all duration-300 ease-in-out overflow-hidden
+        `}
+      >
+        <div
+          className={`h-full flex flex-col ${
+            isSidebarOpen ? "p-2" : "p-0"
+          } transition-all duration-300`}
         >
-          <p className="pb-2 font-display flex items-center text-lg gap-2 border-b">
-            <ChevronDown className="text-gray-400 h-4 w-4" />
-            {project?.name || "Project"}
-          </p>
-          <div className="pt-2 overflow-auto">
-            {Object.keys(fileTree).length === 0 ? (
-              <FileTreeSkeleton />
-            ) : (
-              <FileTreeView
-                tree={fileTree}
-                onFileSelect={handleFileSelect}
-                selectedFileId={selectedFile?.id || null}
-              />
-            )}
-          </div>
-        </aside>
-      </div>
-
-      <main className="flex-1 h-full flex flex-col relative">
-        <button
-          onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-          className="absolute top-1 left-2 z-10 p-2  rounded-md hover:bg-secondary/20 transition"
-          title={isSidebarOpen ? "Collapse Sidebar" : "Expand Sidebar"}
-        >
-          {isSidebarOpen ? (
-            <SidebarClose className="size-5" />
-          ) : (
-            <SidebarOpen className="size-5" />
+          {isSidebarOpen && (
+            <>
+              <div className="pb-2 font-display flex items-center justify-between text-lg gap-2 border-b flex-shrink-0">
+                <div className="flex items-center  gap-2">
+                  <ChevronDown className="text-gray-400 h-4 w-4 flex-shrink-0" />
+                  <span className="truncate">{project?.name || "Project"}</span>
+                </div>
+                {isSidebarOpen && (
+                  <button
+                    onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+                    className="hidden md:block p-1 rounded-md hover:bg-gray-100 transition"
+                    title="Collapse Sidebar"
+                  >
+                    <SidebarClose className="size-5" />
+                  </button>
+                )}
+                <span className="md:hidden text-xs text-gray-500 whitespace-nowrap">
+                  Tap file to preview
+                </span>
+              </div>
+              <div className="pt-2 flex-1 overflow-auto min-h-0">
+                {Object.keys(fileTree).length === 0 ? (
+                  <FileTreeSkeleton />
+                ) : (
+                  <FileTreeView
+                    tree={fileTree}
+                    onFileSelect={handleFileSelect}
+                    selectedFileId={selectedFile?.id || null}
+                  />
+                )}
+              </div>
+            </>
           )}
-        </button>
+        </div>
+      </aside>
 
-        {selectedFile ? (
-          <AnalyzerTab file={selectedFile} />
-        ) : (
-          <div className="flex-1 flex items-center justify-center">
-            <p className="text-gray-500">Select a file to view its content.</p>
-          </div>
-        )}
+      <main
+        className={`
+          h-full flex-1 flex-col relative min-w-0 max-w-full overflow-hidden
+          ${selectedFile ? "flex" : "hidden md:flex"}
+        `}
+      >
+        <div className="absolute top-3 left-2 z-10">
+          {/* This button shows on mobile to go back to the file list */}
+          <button
+            onClick={handleBackToSidebar}
+            className=" rounded-md  md:hidden hover:bg-secondary/20 transition bg-white shadow-sm"
+            title="Back to File List"
+          >
+            <ArrowLeft className="size-6 text-green-900" />
+          </button>
+          {/* Desktop only Button */}
+          {!isSidebarOpen && (
+            <button
+              onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+              className=" rounded-md hover:bg-secondary/20 transition bg-white shadow-sm"
+              title={isSidebarOpen ? "Collapse Sidebar" : "Expand Sidebar"}
+            >
+              <SidebarOpen className="size-6" />
+            </button>
+          )}
+        </div>
+
+        <div className="h-full overflow-hidden min-w-0 w-full">
+          {selectedFile ? (
+            <div className="h-full w-full overflow-hidden">
+              <AnalyzerTab file={selectedFile} />
+            </div>
+          ) : (
+            <div className="flex-1 flex items-center justify-center h-full w-full">
+              <p className="text-gray-500">
+                Select a file to view its content.
+              </p>
+            </div>
+          )}
+        </div>
       </main>
     </div>
   );

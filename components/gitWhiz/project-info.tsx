@@ -7,6 +7,7 @@ import { BookCopy, CalendarDays, ExternalLink } from "lucide-react";
 import Link from "next/link";
 import { Skeleton } from "../ui/skeleton";
 import AnalyzerButton from "../codeWhiz/analyzer/analyzer-button";
+import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
 
 function ProjectInfo() {
   const { project, isLoading } = useProject();
@@ -17,28 +18,34 @@ function ProjectInfo() {
         <div className="flex items-center text-sm text-gray-600 justify-between">
           {/* Name */}
           <div className="flex items-center gap-2 font-medium">
-            <BookCopy className="size-5 text-green-800" />
+            <BookCopy className="size-5 ml-2" />
             {isLoading ? (
               <Skeleton className="pl-3 h-4 w-36" />
             ) : (
-              <span>{project?.name || "Project Name"}</span>
+              <span className="font-display text-lg">
+                {project?.name || "Project Name"}
+              </span>
             )}
           </div>
 
           <div className="flex justify-between items-center gap-4 ">
-            {/* Created At */}
-            <div className="flex items-center gap-2 p-1.5 ">
-              <CalendarDays className="size-5 text-gray-400" />
-              {isLoading ? (
-                <Skeleton className="pl-3 h-4 w-20" />
-              ) : (
+            <Tooltip>
+              <TooltipTrigger>
+                <div className="h-8 w-8 p-0 bg-white/80 hover:bg-secondary/10 shadow-sm flex items-center justify-center rounded-md border border-sidebar">
+                  <CalendarDays className="h-4 w-4" />
+                </div>
+              </TooltipTrigger>
+              <TooltipContent
+                className="bg-secondary text-green-800"
+                side="top"
+              >
                 <span className="text-thin font-code">
                   {project
                     ? new Date(project?.createAt).toLocaleDateString()
                     : "N/A"}
                 </span>
-              )}
-            </div>
+              </TooltipContent>
+            </Tooltip>
 
             <ArchieveButton projectId={project?.id} />
             <AnalyzerButton projectId={project?.id} />

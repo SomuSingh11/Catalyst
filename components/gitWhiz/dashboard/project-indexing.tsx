@@ -50,7 +50,11 @@ function ProjectIndexingPage() {
           </DialogHeader>
 
           <DialogContent
-            className="h-[80vh] w-[60vw] max-w-full max-h-screen p-0"
+            className="
+    w-[95vw] h-[90vh] max-w-full max-h-screen p-0
+    sm:w-[80vw] sm:h-[80vh]
+    md:w-[60vw] md:h-[80vh]
+  "
             onInteractOutside={(e) => {
               // Check if the process is currently running
               const isProcessing = [

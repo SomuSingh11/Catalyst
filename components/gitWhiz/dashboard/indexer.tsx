@@ -1,4 +1,5 @@
 import { useIndexingEvents } from "@/hooks/use-indexingEvents";
+import { cn } from "@/lib/utils";
 import { IndexingProgress } from "@/types/gitWhiz";
 import {
   Activity,
@@ -14,7 +15,6 @@ import {
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 
-// Use your existing hook type
 type IndexerProps = ReturnType<typeof useIndexingEvents>;
 
 // Simple type aliases for clarity
@@ -229,7 +229,7 @@ const PhaseTab = ({
     >
       <button
         onClick={onExpand}
-        className="w-full p-2 flex items-center justify-between hover:bg-black hover:bg-opacity-5 rounded-md transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-opacity-50"
+        className="w-full p-3 flex flex-col items-start sm:flex-row sm:items-center sm:justify-between text-left hover:bg-black/5 rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-gray-500/50"
         aria-expanded={isExpanded}
         aria-controls={`phase-${phase}-content`}
       >
@@ -242,21 +242,21 @@ const PhaseTab = ({
               className="shrink-0 ml-1"
             />
             <div className="text-left min-w-0 flex-1">
-              <div className="font-semibold text-base leading-tight">
+              <div className="font-semibold text-md sm:text-base leading-tight">
                 {config.title}
               </div>
-              <div className="text-sm opacity-80 mt-0.5">
+              <div className="text-sm hidden md:block opacity-80 mt-0.5 break-words">
                 {config.description}
               </div>
             </div>
           </div>
         </div>
         <div className="flex items-center gap-2 shrink-0">
-          <div className="flex items-center gap-3 mt-1 text-xs opacity-70 ">
+          <div className="flex items-center gap-3 shrink-0 mt-3 sm:mt-0 sm:ml-4 text-xs opacity-70">
             <span>
               {phaseLogs.length} event{phaseLogs.length !== 1 ? "s" : ""}
             </span>
-            <span>•</span>
+            <span className="hidden sm:inline">•</span>
             <span>{getProgressInfo()}</span>
             {isExpanded ? (
               <ChevronDown size={20} className="text-gray-600" />
@@ -272,22 +272,24 @@ const PhaseTab = ({
           id={`phase-${phase}-content`}
           className="border-t border-current border-opacity-20"
         >
-          <div className="p-2 ml-12 max-h-64 overflow-y-auto">
+          <div className="p-3 pl-4 sm:pl-16 max-h-64 overflow-y-auto">
             {phaseLogs.length > 0 ? (
               <div className="space-y-2">
                 {[...phaseLogs].reverse().map((log, index) => (
                   <div
                     key={`${index}`}
-                    className="flex gap-3 items-center text-sm p-2 rounded-lg bg-black bg-opacity-5"
+                    className="flex flex-col sm:flex-row sm:gap-3 sm:items-center text-sm p-2 rounded-lg bg-black/5"
                   >
                     <span className="text-gray-600 text-xs font-mono shrink-0 min-w-[60px]">
                       {formatTimestamp()}
                     </span>
-                    <span className="text-current text-xs opacity-90 leading-relaxed">
+                    <span className="text-current text-xs opacity-90 leading-relaxed break-words">
                       {log.message}
                     </span>
                     {log.currentFile && (
-                      <span className="text-xs font-code">{`[  ${log.currentFile}  ]`}</span>
+                      <span className="text-xs font-code text-blue-600 break-all mt-1 sm:mt-0">
+                        {log.currentFile}
+                      </span>
                     )}
                   </div>
                 ))}
@@ -422,40 +424,32 @@ export const Indexer: React.FC<IndexerProps> = ({
   return (
     <div className="border-2 border-gray-200 rounded-md shadow-xl bg-white overflow-hidden">
       {/* Header */}
-      <div className="bg-gradient-to-r from-secondary-50 to-purple-50 p-6 pt-8 border-b border-gray-200">
-        <div className="flex justify-between items-start gap-4">
+      <div className="bg-gradient-to-r from-gray-50 to-purple-50 p-4 sm:p-6 border-b border-gray-200">
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4">
           <div>
             <h2 className="text-xl font-bold text-gray-800 font-display">
               GitWhiz Indexing Engine
             </h2>
-            <p className="text-sm text-gray-600">
+            <p className="text-sm text-gray-600 mt-1">
               Real-time semantic analysis of your repository.
             </p>
           </div>
-          <div className="flex items-center gap-2 text-sm font-semibold text-gray-700 bg-white border border-gray-200 px-3 py-1 rounded-full">
+          <div className="flex items-center gap-2 text-sm font-semibold text-gray-700 bg-white border border-gray-200 px-3 py-1 rounded-full self-start">
             <Activity
-              size={14}
-              className={
-                !isCompleted && !hasError
-                  ? "animate-pulse text-blue-500"
-                  : "text-gray-500"
-              }
+              className={cn(!isCompleted && !hasError && "animate-pulse")}
             />
             <span>{status.charAt(0).toUpperCase() + status.slice(1)}</span>
           </div>
         </div>
 
         <div className="mt-4 space-y-2">
-          <div className="font-mono text-sm text-gray-800 bg-gray-900/5 p-3 rounded-md flex items-center shadow-inner">
-            <span className="text-gray-500 mr-2">{">"}</span>
-            <span className="">{message}</span>
+          <div className="font-mono text-sm text-gray-800 bg-black/5 p-3 rounded-md flex flex-wrap items-center gap-x-2 shadow-inner">
+            <span className="text-gray-500 mr-2 hidden md:block">{">"}</span>
+            <span className="break-words">{message}</span>
             {!isCompleted && currentFile && (
-              <span className=" ml-auto text-sm font-code text-gray-600">
+              <span className="text-sm font-code text-gray-600 truncate">
                 [{currentFile}]
               </span>
-            )}
-            {!isCompleted && !hasError && (
-              <span className="ml-2 w-2 h-4 bg-gray-800 animate-pulse rounded-sm"></span>
             )}
           </div>
         </div>
@@ -474,7 +468,7 @@ export const Indexer: React.FC<IndexerProps> = ({
       </div>
 
       {/* Phase Tabs */}
-      <div className="p-6 space-y-4">
+      <div className="p-4 sm:p-6 space-y-4">
         {(["cloning", "processing", "saving"] as PhaseType[]).map((phase) => {
           const phaseState = phaseStates[phase];
           if (!phaseState.hasStarted) return null;
@@ -497,7 +491,7 @@ export const Indexer: React.FC<IndexerProps> = ({
 
       {/* Error State */}
       {hasError && (
-        <div className="px-6">
+        <div className="p-4 sm:px-6">
           <div className="bg-red-50 border-2 border-red-200 rounded-xl p-3">
             <div className="flex items-start  gap-6">
               <AlertTriangle
@@ -505,7 +499,7 @@ export const Indexer: React.FC<IndexerProps> = ({
                 className="text-red-500 shrink-0  ml-2"
               />
               <div>
-                <p className="text-red-800 leading-relaxed">
+                <p className="text-red-800 leading-relaxed break-words">
                   {error ||
                     "An unexpected error occurred during the indexing process. Please try again or contact support if the issue persists."}
                 </p>
