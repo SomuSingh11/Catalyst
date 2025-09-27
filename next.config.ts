@@ -8,11 +8,11 @@ const nextConfig: NextConfig = {
       "pbs.twimg.com",
       "img.clerk.com",
       "assets.leetcode.com",
-      "avatars.githubusercontent.com"
+      "avatars.githubusercontent.com",
     ], // Add the domain here
   },
-  typescript:{
-    ignoreBuildErrors: true
+  typescript: {
+    ignoreBuildErrors: true,
   },
   eslint: {
     ignoreDuringBuilds: true,

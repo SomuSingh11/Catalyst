@@ -5,7 +5,7 @@ const genAI = new GoogleGenerativeAI(process.env.GOOGLE_GEMINI_KEY ?? "");
 
 // Get the model
 const model = genAI.getGenerativeModel({
-  model: "gemini-2.0-flash"
+  model: "gemini-2.0-flash",
 });
 
 interface OutputFormat {
@@ -22,8 +22,6 @@ export async function strict_output(
   num_tries: number = 3,
   verbose: boolean = false
 ) {
-
-
   // if the user input is in a list, we also process the output as a list of json
   const list_input: boolean = Array.isArray(user_prompt);
   // if the output format contains dynamic elements of < or >, then add to the prompt to handle dynamic elements
@@ -36,10 +34,11 @@ export async function strict_output(
 
   for (let i = 0; i < num_tries; i++) {
     try {
-      let output_format_prompt: string = `\nYou are to output ${list_output && "an array of objects in"
-        } the following in json format: ${JSON.stringify(
-          output_format
-        )}. \nDo not put quotation marks or escape character \\ in the output fields.`;
+      let output_format_prompt: string = `\nYou are to output ${
+        list_output && "an array of objects in"
+      } the following in json format: ${JSON.stringify(
+        output_format
+      )}. \nDo not put quotation marks or escape character \\ in the output fields.`;
 
       if (list_output) {
         output_format_prompt += `\nIf output field is a list, classify output into the best element of the list.`;
@@ -56,8 +55,9 @@ export async function strict_output(
       }
 
       // Combine prompts for Gemini
-      const fullPrompt = `${system_prompt}${output_format_prompt}${error_msg}\n\nUser request: ${Array.isArray(user_prompt) ? user_prompt.join("\n") : user_prompt
-        }`;
+      const fullPrompt = `${system_prompt}${output_format_prompt}${error_msg}\n\nUser request: ${
+        Array.isArray(user_prompt) ? user_prompt.join("\n") : user_prompt
+      }`;
 
       if (verbose) {
         console.log("Full prompt:", fullPrompt);
@@ -168,7 +168,6 @@ export async function strict_output(
   throw new Error("Failed to generate response after all retries");
 }
 
-
 // aiSummariseCommit function is function that uses an AI model to generate a summary of a Git diff—i.e., a set of code changes from a Git commit.
 export const aiSummariseCommit = async (diff: string) => {
   const response = await model.generateContent([
@@ -201,26 +200,66 @@ export const aiSummariseCommit = async (diff: string) => {
   because there were more than two relevant files in the hypothetical commit.
   Do not include parts of the example in your summary.
   It is given only as an example of appropriate comments.`,
-    `Please summarise the following diff file: \n\n${diff}`
-  ])
+    `Please summarise the following diff file: \n\n${diff}`,
+  ]);
   return response.response.text();
-}
-
+};
 
 export async function summariseCode(doc: Document) {
   const code = doc.pageContent.slice(0, 10000);
-  console.log("summarise code ----------------------")
+  console.log("summarise code ----------------------");
   // console.log("source", doc.metadata);
   console.log("source code for file:", doc.metadata.source, code);
   try {
     const response = await model.generateContent([
-      `You are an intelligent senior software engineer who specializes in onboarding junior software engineers onto projects. 
-      You are onboarding a junior software engineer and explaining to them the purpose of the ${doc.metadata.source} file.
-      Here is the code:
-      ---
-      ${code}
-      ---
-      Please provide a summary of the code above in no more than 100 words.`
+      `
+  ## ROLE & GOAL
+  You are a code analysis AI specializing in generating concise, developer-friendly technical summaries.
+  Your dual objectives:
+  1. Create a dense, factual, technical summary suitable for vector embeddings and semantic search.
+  2. Present the summary in a clean, professional, scannable markdown format for software developers.
+
+  ## TASK
+  Analyze the following source file: \`${doc.metadata.source}\`.  
+  Summarize its purpose, abstractions, and interactions. If the file is not a standard code module (e.g., JSON, markdown, simple export file), adapt the summary to reflect its actual purpose.
+
+  ### SOURCE CODE
+  ---
+  ${code}
+  ---
+
+  ## OUTPUT FORMAT
+  Use the **exact markdown structure** below. Be as detailed and technical as possible within each section..  
+
+
+  ## **Overview:** 
+  A detailed, multi-sentence overview of this file’s role, its primary responsibilities, and how it fits into the overall application architecture.
+
+  ## **Core Functionality** A detailed sentence describing the file’s primary technical purpose.
+
+  // Suggestion 1: Added the Architectural Pattern section
+  ## **Architectural Pattern** If applicable, identify and briefly explain the software design pattern this file implements (e.g., Middleware, React Hook, Singleton, Factory). If not applicable, state "N/A".
+
+  ## **Key Abstractions & Logic**
+  - **\`functionName(param1, param2)\`**: A detailed description of its logic, purpose, key parameters, and what it returns.
+  - **\`ClassName\`**: A description of its responsibilities, key methods, and properties.
+  *(List all major exported functions and classes. Do not skip important ones.)*
+
+
+  ## **Error Handling & Side Effects**
+  - **Error Handling:** Describe how this code handles potential errors (e.g., try-catch blocks, error propagation, calls to a logging service).
+  - **Side Effects:** List any important side effects (e.g., makes an API call to an external service, writes to a database, modifies global state).
+
+  ## **Dependencies & Interactions**
+  - **External:** List key imported libraries and briefly state what each is used for.
+  - **Internal:** Explain how this file connects with the rest of the codebase in detail.
+
+  ## **Technical Keywords**
+  Single line, comma-separated, 8–15 technical keywords. Be specific.
+
+  ## FINAL REVIEW
+  Silently review your summary before responding. Ensure it accurately reflects the code, adheres to the format, and is concise yet technical. Remove all conversational fluff.
+  `,
     ]);
     return response.response.text();
   } catch (error) {
@@ -229,13 +268,11 @@ export async function summariseCode(doc: Document) {
   }
 }
 
-
 export async function generateEmbedding(summary: string) {
   const model = genAI.getGenerativeModel({
     model: "text-embedding-004",
-
-  })
-  const result = await model.embedContent(summary)
+  });
+  const result = await model.embedContent(summary);
   const embedding = result.embedding;
   return embedding.values;
 }

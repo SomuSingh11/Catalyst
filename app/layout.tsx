@@ -1,10 +1,9 @@
 import type { Metadata } from "next";
-import { Inter, Source_Code_Pro } from "next/font/google";
+import { Inter, Source_Code_Pro, Figtree } from "next/font/google";
 import "./globals.css";
 import { ClerkProvider } from "@clerk/nextjs";
 import { cn } from "@/lib/utils";
 import Providers from "@/Providers/Providers";
-
 
 const inter = Inter({
   variable: "--font-inter",
@@ -22,9 +21,15 @@ export const metadata: Metadata = {
   title: "Catalyst",
   description: "Catalyst by k4ge",
   icons: {
-    icon: "/binaryIcon.svg", 
+    icon: "/binaryIcon.svg",
   },
 };
+
+const figtree = Figtree({
+  subsets: ["latin"],
+  display: "swap",
+  variable: "--font-figtree", // Set the CSS variable name
+});
 
 export default function RootLayout({
   children,
@@ -36,14 +41,11 @@ export default function RootLayout({
       <html lang="en" suppressHydrationWarning>
         <body
           className={cn(
-            `${inter.variable} ${sourceCodePro.variable} antialiased`,
+            `${inter.variable} ${sourceCodePro.variable} ${figtree.variable} antialiased`,
             `min-h-screen flex flex-col`
           )}
         >
-          <Providers>
-            {children}
-            
-            </Providers>
+          <Providers>{children}</Providers>
         </body>
       </html>
     </ClerkProvider>

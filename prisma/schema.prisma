@@ -96,6 +96,7 @@ model WhizProject{
   name          String
   githubUrl     String
   githubToken   String?
+  status        String @default("pending") 
 
   createAt      DateTime @default(now())
   updatedAt     DateTime @updatedAt
@@ -126,7 +127,7 @@ model SourceCodeEmbedding{
 
   summaryEmbedding Unsupported("vector(768)")?
   sourceCode       String 
-  fileName         String
+  fileName         String //filePath
   summary          String
 
   whizProjectId    String
