@@ -127,7 +127,7 @@ model SourceCodeEmbedding{
 
   summaryEmbedding Unsupported("vector(768)")?
   sourceCode       String 
-  fileName         String
+  fileName         String //filePath
   summary          String
 
   whizProjectId    String
