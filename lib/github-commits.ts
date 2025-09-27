@@ -2,6 +2,7 @@
 import axios from "axios";
 import { Octokit } from "octokit";
 import { aiSummariseCommit } from "@/lib/gemini";
+import prisma from "@/lib/db";
 
 export const octokit = new Octokit({
   auth: process.env.GITHUB_TOKEN,
