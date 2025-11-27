@@ -117,7 +117,7 @@ export default function HeroSection() {
                 </Button>
                 <Button
                   variant={"link"}
-                  className="px-8 py-6 group font-medium gap-2 hover:scale-105 transition-transform duration-200"
+                  className="px-8 py-6 group font-medium gap-2 hover:scale-105 transition-transform duration-200 border border-dashed"
                 >
                   {" "}
                   <Link href={"https://github.com/SomuSingh11/Catalyst"}>
