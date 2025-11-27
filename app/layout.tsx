@@ -21,7 +21,7 @@ export const metadata: Metadata = {
   title: "Catalyst",
   description: "Catalyst by k4ge",
   icons: {
-    icon: "/binaryIcon.svg",
+    icon: "/binary-code.png",
   },
 };
 
