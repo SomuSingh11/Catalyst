@@ -1,7 +1,7 @@
 export const gitwhizMockData = [
   {
     question:
-      "Analyze the repository and explain how real-time chat functionality is implemented in this project. Which technologies or libraries are used for real-time communication. How messages are sent, received, and broadcast to connected clients. How the frontend subscribes to real-time updates and updates the UI.",
+      "Analyze the repository and explain how real-time chat functionality is implemented in this project. ",
     answer: `Okay, I'll analyze the codebase and explain how real-time chat functionality is implemented.
 
 **Overall Architecture**

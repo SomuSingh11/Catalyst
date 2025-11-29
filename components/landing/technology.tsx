@@ -24,9 +24,9 @@ export default function LandingTechStack({
   return (
     <section
       id="technology"
-      className="py-16 lg:py-24 bg-[#FFFDF8] text-gray-900 flex items-center justify-center overflow-hidden"
+      className="py-20 lg:py-24 bg-[#FFFDF8] text-gray-900 flex items-center justify-center overflow-hidden"
     >
-      <div className="w-full lg:max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center py-2">
+      <div className="w-full lg:max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
         <h2 className="text-4xl lg:text-5xl font-semibold mb-4 leading-tight font-display">
           {title}
           {subtitle && (
