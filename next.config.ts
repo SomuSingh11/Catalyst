@@ -17,6 +17,14 @@ const nextConfig: NextConfig = {
   eslint: {
     ignoreDuringBuilds: true,
   },
+  webpack: (config, { isServer }) => {
+    if (isServer) {
+      config.externals = config.externals || [];
+      config.externals.push("web-tree-sitter");
+    }
+    return config;
+  },
+  serverExternalPackages: ["web-tree-sitter"],
 };
 
 export default nextConfig;
