@@ -5,7 +5,7 @@ const genAI = new GoogleGenerativeAI(process.env.GOOGLE_GEMINI_KEY ?? "");
 
 // Get the model
 const model = genAI.getGenerativeModel({
-  model: "gemini-2.0-flash",
+  model: "gemini-2.5-flash",
 });
 
 interface OutputFormat {
@@ -208,57 +208,151 @@ export const aiSummariseCommit = async (diff: string) => {
 export async function summariseCode(doc: Document) {
   const code = doc.pageContent.slice(0, 10000);
   console.log("summarise code ----------------------");
-  // console.log("source", doc.metadata);
   console.log("source code for file:", doc.metadata.source, code);
+
   try {
     const response = await model.generateContent([
       `
-  ## ROLE & GOAL
-  You are a code analysis AI specializing in generating concise, developer-friendly technical summaries.
-  Your dual objectives:
-  1. Create a dense, factual, technical summary suitable for vector embeddings and semantic search.
-  2. Present the summary in a clean, professional, scannable markdown format for software developers.
+## ROLE & GOAL
+You are a code analysis AI creating dual-purpose summaries:
+1. **For RAG/Vector Search**: Semantically rich, question-answerable content that helps retrieve this file when users ask natural language questions
+2. **For Frontend Display**: Clean, scannable markdown that developers can read and navigate
 
-  ## TASK
-  Analyze the following source file: \`${doc.metadata.source}\`.  
-  Summarize its purpose, abstractions, and interactions. If the file is not a standard code module (e.g., JSON, markdown, simple export file), adapt the summary to reflect its actual purpose.
+**Critical Balance**: Write in natural, flowing language (good for embeddings) while maintaining clear structure (good for UI rendering).
 
-  ### SOURCE CODE
-  ---
-  ${code}
-  ---
+## TASK
+Analyze this source file: \`${doc.metadata.source}\`
 
-  ## OUTPUT FORMAT
-  Use the **exact markdown structure** below. Be as detailed and technical as possible within each section..  
+### SOURCE CODE
+---
+${code}
+---
 
+## OUTPUT FORMAT
+Use this **exact markdown structure**. Write each section in natural, explanatory language (not just bullet points).
 
-  ## **Overview:** 
-  A detailed, multi-sentence overview of this file’s role, its primary responsibilities, and how it fits into the overall application architecture.
+---
 
-  ## **Core Functionality** A detailed sentence describing the file’s primary technical purpose.
+## **📋 Overview**
+[Write 3-4 sentences explaining what this file does, why it exists, and when developers would interact with it. Use natural language as if explaining to a teammate. Include the problem it solves and its role in the application architecture.]
 
-  // Suggestion 1: Added the Architectural Pattern section
-  ## **Architectural Pattern** If applicable, identify and briefly explain the software design pattern this file implements (e.g., Middleware, React Hook, Singleton, Factory). If not applicable, state "N/A".
+---
 
-  ## **Key Abstractions & Logic**
-  - **\`functionName(param1, param2)\`**: A detailed description of its logic, purpose, key parameters, and what it returns.
-  - **\`ClassName\`**: A description of its responsibilities, key methods, and properties.
-  *(List all major exported functions and classes. Do not skip important ones.)*
+## **🎯 Core Purpose**
+[A detailed paragraph (4-6 sentences) describing the file's primary technical purpose and how it accomplishes it. Use varied terminology and explain both WHAT it does and HOW it works. This should answer questions like "What does this file handle?" and "How does it implement [feature]?"]
 
+---
 
-  ## **Error Handling & Side Effects**
-  - **Error Handling:** Describe how this code handles potential errors (e.g., try-catch blocks, error propagation, calls to a logging service).
-  - **Side Effects:** List any important side effects (e.g., makes an API call to an external service, writes to a database, modifies global state).
+## **🏗️ Architecture & Pattern**
+**Design Pattern**: [If applicable, identify the pattern (e.g., "Middleware Pattern", "Custom React Hook", "Service Layer", "Repository Pattern"). If not applicable, state "N/A"]
 
-  ## **Dependencies & Interactions**
-  - **External:** List key imported libraries and briefly state what each is used for.
-  - **Internal:** Explain how this file connects with the rest of the codebase in detail.
+**Architectural Role**: [2-3 sentences explaining how this fits into the broader system architecture. Use language like "serves as", "connects", "orchestrates", etc.]
 
-  ## **Technical Keywords**
-  Single line, comma-separated, 8–15 technical keywords. Be specific.
+---
 
-  ## FINAL REVIEW
-  Silently review your summary before responding. Ensure it accurately reflects the code, adheres to the format, and is concise yet technical. Remove all conversational fluff.
+## **⚙️ Key Components & Logic**
+
+${
+  "" /* For each major export, write 2-3 descriptive sentences, not just bullets */
+}
+
+### \`functionOrClassName\`
+[Describe what it does, when you'd use it, key parameters, return values, and its purpose in the system. Write as if documenting for a team wiki.]
+
+### \`anotherComponentName\`
+[Same approach - natural language explanation that answers questions like "What does X do?" "When would I use Y?" "How does Z work?"]
+
+${"" /* Continue for all major exports - aim for 3-7 key components */}
+
+---
+
+## **🔧 Implementation Details**
+
+**Technical Approach**: [Paragraph describing the implementation strategy, algorithms, or patterns used. Explain WHY this approach was chosen if evident from the code.]
+
+**State Management**: [How data flows through this code, any state tracking, caching strategies]
+
+**Performance Considerations**: [Any optimization patterns, async handling, memoization, etc. Write "None significant" if not applicable]
+
+---
+
+## **🔌 Dependencies & Integration**
+
+**External Libraries**:
+- **\`library-name\`**: [Not just "used for X" but "enables this file to accomplish Y by providing Z functionality"]
+${"" /* List 3-7 key dependencies with context */}
+
+**Internal Connections**: [Paragraph explaining how this file integrates with other parts of the codebase. Use phrases like "consumed by", "depends on", "provides services to", "coordinates with". This helps answer "how does X connect to Y?" questions.]
+
+**Related Files**: [List 2-5 related files a developer should understand alongside this one, with brief context why]
+
+---
+
+## **⚠️ Error Handling & Edge Cases**
+
+**Error Management**: [Describe the error handling strategy. Use searchable language: "handles validation errors by...", "catches and logs...", "prevents failures through..."]
+
+**Side Effects**: [List important side effects with context]
+- [e.g., "Makes authenticated API calls to the external payment service"]
+- [e.g., "Writes audit logs to the database for compliance tracking"]
+- [e.g., "Updates global application state that triggers re-renders"]
+
+**Edge Cases Handled**: [Any special cases or boundary conditions this code accounts for]
+
+---
+
+## **❓ Common Questions This Answers**
+
+${"" /* CRITICAL for RAG - phrase as actual developer questions */}
+This file helps answer questions like:
+
+- "How does the application [specific capability]?"
+- "What handles [specific responsibility or feature]?"  
+- "Where is [pattern/concept/algorithm] implemented?"
+- "How do I [task this enables]?"
+- "Why does the system [behavior this creates]?"
+
+${"" /* Include 5-8 realistic questions */}
+
+---
+
+## **🔍 Technical Keywords**
+[Single line, 15-20 comma-separated terms including: exact function/class names, technical concepts, problem domains, architectural patterns, related synonyms, frameworks, algorithms. This aids both search and embedding.]
+
+---
+
+## **📝 Usage Context**
+[2-3 sentences on when/why a developer would need to modify or reference this file. Include common scenarios like "When adding new authentication methods...", "If implementing additional payment providers...", etc.]
+
+---
+
+## CRITICAL INSTRUCTIONS FOR QUALITY
+
+**For RAG Optimization**:
+1. Use **varied phrasing** - mention the same concept multiple ways with different words
+2. Write in **natural, flowing language** - not telegraphic bullet points
+3. Include **problem-domain vocabulary** - use terms developers actually search for
+4. Answer implicit questions - structure as if responding to "what", "why", "how", "when"
+5. **Semantic density** - every sentence should add retrievable information
+
+**For Frontend Display**:
+1. Maintain **clear markdown hierarchy** with proper heading levels
+2. Use **emojis** for visual scanning (📋 🎯 🏗️ ⚙️ 🔧 🔌 ⚠️ ❓ 🔍 📝)
+3. Keep **consistent structure** - every summary follows the same format
+4. Make **scannable** - use bold for emphasis, code formatting for names
+5. **No filler text** - every section must contain useful information
+
+**Balance Both**:
+- Write detailed explanations (good for vectors) in structured sections (good for UI)
+- Use descriptive prose (RAG-friendly) with clear headings (render-friendly)
+- Include technical accuracy (useful content) with natural language (better embeddings)
+
+Before responding, verify:
+✓ Each section uses natural, explanatory language (not just lists)
+✓ The summary would match common developer questions
+✓ The markdown structure is clean and consistent
+✓ Technical accuracy is maintained throughout
+✓ Both humans and vector search would find this useful
   `,
     ]);
     return response.response.text();

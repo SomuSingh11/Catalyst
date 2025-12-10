@@ -19,7 +19,7 @@ export async function askQuestion(question: string, projectId: string) {
   const vectorQuery = `[${queryVector.join(",")}]`;
 
   // Step 2: Find top 10 source code files most similar to the question vector
-    const result = await prisma.$queryRaw`
+  const result = (await prisma.$queryRaw`
     SELECT "fileName", "sourceCode", "summary",
     1-("summaryEmbedding" <=> ${vectorQuery}::vector) AS "similarity"
     FROM "SourceCodeEmbedding"
@@ -27,12 +27,11 @@ export async function askQuestion(question: string, projectId: string) {
     AND "whizProjectId" = ${projectId}
     ORDER BY "similarity" DESC 
     LIMIT 10
-    ` as {
-        fileName: string 
-        sourceCode: string
-        summary: string
-    }[]
-
+    `) as {
+    fileName: string;
+    sourceCode: string;
+    summary: string;
+  }[];
 
   // Step 3: Concatenate context from retrieved files
   let context = "";
@@ -43,7 +42,7 @@ export async function askQuestion(question: string, projectId: string) {
   // Step 4: Use Gemini model to answer the question using the constructed context
   (async () => {
     const { textStream } = await streamText({
-      model: google("gemini-2.0-flash"),
+      model: google("gemini-2.5-flash"),
       prompt: `
         You are a AI code assistant who answers questions about the codebase. Your target audience is a technical intern who is new to the codebase.
         ...
@@ -71,7 +70,6 @@ export async function askQuestion(question: string, projectId: string) {
     filesReferences: result,
   };
 }
-
 
 // This server action performs the following:
 
