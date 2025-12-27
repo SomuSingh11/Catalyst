@@ -86,3 +86,9 @@ body {
     @apply bg-background text-foreground;
   }
 }
+
+.react-flow__node {
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+}

@@ -1,6 +1,6 @@
-
 import { projectRouter } from "@/server/api/routers/whizProject";
 import { createCallerFactory, createTRPCRouter } from "@/server/api/trpc";
+import { graphRouter } from "./routers/graph";
 
 /**
  * This is the primary router for your server.
@@ -9,6 +9,7 @@ import { createCallerFactory, createTRPCRouter } from "@/server/api/trpc";
  */
 export const appRouter = createTRPCRouter({
   whizProject: projectRouter,
+  graph: graphRouter,
 });
 
 // export type definition of API

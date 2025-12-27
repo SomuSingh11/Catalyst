@@ -60,7 +60,8 @@ export interface EntityRelationship {
     confidence?: number;
     isDirectRelationship?: boolean;
     mroPosition?: number;
-    [key: string]: unknown;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    [key: string]: any;
   };
 }
 
@@ -131,7 +132,8 @@ export interface ParsedEntity {
       | "contains";
     target: string;
     targetFile?: string;
-    metadata?: Record<string, unknown>;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    metadata?: Record<string, any>;
   }>;
 }
 

@@ -27,15 +27,7 @@ export function transformToReactFlow(
     source: r.sourceFile,
     target: r.targetFile,
     data: { symbols: r.symbols },
-    animated: false,
-    markerEnd: {
-      type: "arrowclosed",
-      color: r.type === "external" ? "#ff3b30" : "#10b981",
-    },
-    style: {
-      stroke: r.type === "external" ? "#ff3b30" : "#10b981",
-      strokeWidth: 2,
-    },
+    relationshipType: r.type,
   }));
 
   return { nodes, edges };
