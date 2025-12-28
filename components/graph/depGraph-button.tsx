@@ -7,15 +7,18 @@ import {
 import useProject from "@/hooks/use-project";
 import { useSidebar } from "@/components/ui/sidebar";
 import { cn } from "@/lib/utils";
-import { Sparkles } from "lucide-react";
+import { Network } from "lucide-react";
 import { useRouter } from "next/navigation";
 
-interface ArchieveButtonProps {
+interface DependencyGraphButtonProps {
   className?: string;
   projectId?: string;
 }
 
-const AnalyzerButton = ({ className, projectId }: ArchieveButtonProps) => {
+const DependencyGraphButton = ({
+  className,
+  projectId,
+}: DependencyGraphButtonProps) => {
   const router = useRouter();
   const { setProjectId } = useProject();
   const { setOpen } = useSidebar();
@@ -36,17 +39,17 @@ const AnalyzerButton = ({ className, projectId }: ArchieveButtonProps) => {
             e.stopPropagation();
             setProjectId(projectId!);
             setOpen(false);
-            router.push(`/gitwhiz/analyzer`);
+            router.push(`/gitwhiz/graph`);
           }}
         >
-          <Sparkles className="h-4 w-4 text-green-900" />
+          <Network className="h-4 w-4 text-green-900" />
         </Button>
       </TooltipTrigger>
       <TooltipContent className="bg-secondary text-green-800" side="top">
-        <p>CodeWhiz Analyzer</p>
+        <p>Dependency Graph</p>
       </TooltipContent>
     </Tooltip>
   );
 };
 
-export default AnalyzerButton;
+export default DependencyGraphButton;

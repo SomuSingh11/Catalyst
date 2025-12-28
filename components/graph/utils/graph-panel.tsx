@@ -5,6 +5,7 @@ import {
   ArrowRight,
   RefreshCw,
   Workflow,
+  Undo2,
 } from "lucide-react";
 import { ConnectionLineType, Node, Panel } from "reactflow";
 import { Button } from "@/components/ui/button";
@@ -16,6 +17,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { useRouter } from "next/navigation";
 
 interface GraphPanelProps {
   direction: "TB" | "LR";
@@ -50,6 +52,11 @@ export function GraphPanel({
   setSecondarySidebarOpen,
   selectedNode,
 }: GraphPanelProps) {
+  const router = useRouter();
+
+  const handleHomeClick = () => {
+    router.push("/gitwhiz/project");
+  };
   return (
     <Panel position="top-right" className="m-4 z-10">
       <div className="flex items-center gap-1 p-1 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border rounded-md shadow-sm">
@@ -140,6 +147,16 @@ export function GraphPanel({
           title="Refresh Graph"
         >
           <RefreshCw size={15} />
+        </Button>
+
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-8 w-8 hover:bg-accent hover:text-accent-foreground"
+          onClick={handleHomeClick}
+          title="Go Back"
+        >
+          <Undo2 size={15} />
         </Button>
       </div>
     </Panel>

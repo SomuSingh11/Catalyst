@@ -1,5 +1,4 @@
 import { useUser } from "@clerk/nextjs";
-import { PlusIcon } from "lucide-react";
 import React from "react";
 import {
   SidebarMenuButton,
@@ -29,11 +28,12 @@ function UserSidebar() {
               </p>
             )}
             <button
-              className={`bg-secondary rounded-lg ${
+              className={`bg-emerald-700/40 rounded-lg ${
                 isCollapsed ? "p-1" : "p-2"
               }`}
             >
-              <PlusIcon className="text-green-700" />
+              <img src="/binary-code.png" />
+              {/* <PlusIcon className="text-green-700" /> */}
             </button>
           </SidebarMenuButton>
         </SidebarMenuItem>

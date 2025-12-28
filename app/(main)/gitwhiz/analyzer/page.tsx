@@ -15,13 +15,17 @@ import {
   ChevronDown,
   SidebarClose,
   SidebarOpen,
+  Undo2,
 } from "lucide-react";
 import AnalyzerTab from "@/components/codeWhiz/analyzer/analyzer-tab";
 import FileTreeSkeleton from "@/components/utilities/filetree-skeleton";
+import { useRouter } from "next/navigation";
+import { Button } from "@/components/ui/button";
 
 function AnalyzerPage() {
   const [selectedFile, setSelectedFile] = React.useState<FileNode | null>(null);
   const [isSidebarOpen, setIsSidebarOpen] = React.useState(true);
+  const router = useRouter();
 
   const { projectId, project } = useProject();
   const { data: sourceFiles } = api.whizProject.getSourceFiles.useQuery({
@@ -39,6 +43,10 @@ function AnalyzerPage() {
 
   const handleBackToSidebar = () => {
     setSelectedFile(null);
+  };
+
+  const handleHomeClick = () => {
+    router.push("/gitwhiz/project");
   };
 
   return (
@@ -69,13 +77,24 @@ function AnalyzerPage() {
                   <span className="truncate">{project?.name || "Project"}</span>
                 </div>
                 {isSidebarOpen && (
-                  <button
-                    onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-                    className="hidden md:block p-1 rounded-md hover:bg-gray-100 transition"
-                    title="Collapse Sidebar"
-                  >
-                    <SidebarClose className="size-5" />
-                  </button>
+                  <div className="flex ml-auto gap-2">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8 hover:bg-accent hover:text-accent-foreground"
+                      onClick={handleHomeClick}
+                      title="Go Back"
+                    >
+                      <Undo2 size={15} />
+                    </Button>
+                    <button
+                      onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+                      className="hidden md:block p-1 rounded-md hover:bg-gray-100 transition"
+                      title="Collapse Sidebar"
+                    >
+                      <SidebarClose className="size-5" />
+                    </button>
+                  </div>
                 )}
                 <span className="md:hidden text-xs text-gray-500 whitespace-nowrap">
                   Tap file to preview
