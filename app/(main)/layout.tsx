@@ -1,7 +1,7 @@
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/app-sidebar";
 import { BreadcrumbHeader } from "@/components/breadcrumb-header";
-import { initialProfile } from "@/lib/intital-profile";
+import { initialProfile } from "@/lib/auth/intital-profile";
 
 const MainLayout = async ({ children }: { children: React.ReactNode }) => {
   await initialProfile();

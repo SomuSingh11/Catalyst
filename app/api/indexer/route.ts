@@ -1,4 +1,4 @@
-import { indexGithubRepoWithSSE } from "@/lib/github-indexer-sse";
+import { indexGithubRepoWithSSE } from "@/lib/github/indexer-sse";
 import { IndexingProgress } from "@/types/gitWhiz";
 import prisma from "@/lib/db";
 

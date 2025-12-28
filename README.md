@@ -1,36 +1,26 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+## Catalyst: AI-Powered Code Comprehension Suite
 
-## Getting Started
+Catalyst is an advanced developer productivity suite designed to solve the "Codebase Understanding Problem."
 
-First, run the development server:
+Modern repositories are massive, complex, and poorly documented. Onboarding to a new codebase or debugging a legacy module often requires hours of mental mapping. Catalyst automates this by turning any GitHub repository into an interactive, queryable knowledge base.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+Catalyst allows developers to ask high-level questions ("How is auth handled?") and receive accurate, context-aware answers backed by citations.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## 🚀 The Problem
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Modern software engineering faces a critical bottleneck: Context Switching & Code Complexity.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- **Onboarding is slow:** Developers spend weeks just reading files to understand architecture.
+- **Search is shallow:** Ctrl+F and grep only find keywords, not logic or intent.
+- **Documentation is stale:** Wikis and Readmes are rarely in sync with the actual codebase.
 
-## Learn More
+## 💡 The Solution
 
-To learn more about Next.js, take a look at the following resources:
+Catalyst (and its core engine, GitWhiz) solves this by building a "Digital Twin" of your repository. It doesn't just read text; it understands structure.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+#### Key Features
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- 🧠 Deep Context RAG Pipeline
+- 🕸️ Interactive Dependency Graph
+- 💬 Natural Language Q&A
+- ⚡ Real-Time Ingestion UI

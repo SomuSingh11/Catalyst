@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import axios from "axios";
 import { Octokit } from "octokit";
-import { aiSummariseCommit } from "@/lib/gemini";
+import { aiSummariseCommit } from "@/lib/services/gemini";
 import prisma from "@/lib/db";
 
 export const octokit = new Octokit({

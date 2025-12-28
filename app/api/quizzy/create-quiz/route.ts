@@ -4,7 +4,7 @@ import { auth } from "@clerk/nextjs/server";
 
 import { ZodError } from "zod";
 import { quizCreationSchema } from "@/schemas/form/quiz";
-import { currentProfile } from "@/lib/current-profile";
+import { currentProfile } from "@/lib/auth/current-profile";
 
 import { NextResponse } from "next/server";
 

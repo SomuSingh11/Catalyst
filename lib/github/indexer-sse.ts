@@ -4,8 +4,12 @@ import path from "path";
 import fs from "fs/promises";
 import simpleGit from "simple-git";
 import { rimraf } from "rimraf";
-import { generateEmbedding, summariseCode } from "./gemini";
+import { generateEmbedding, summariseCode } from "../services/gemini";
 import prisma from "@/lib/db";
+import { IndexingProgress } from "@/types/gitWhiz";
+
+// --- A simple delay helper ---
+const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 // Retry a promise-returning function with exponential backoff
 const retryWithBackoff = async <T>(
@@ -137,15 +141,30 @@ const isCodeFile = (fileName: string): boolean => {
 };
 
 // --- Step 1: Clone repo and load files from local disk ---
-const loadRepoFilesLocally = async (githubUrl: string): Promise<Document[]> => {
+const loadRepoFilesLocally = async (
+  githubUrl: string,
+  onProgress: (progress: IndexingProgress) => void
+): Promise<Document[]> => {
   const tempDir = await fs.mkdtemp(path.join(process.cwd(), "temp-repo-"));
   console.log(`Cloning ${githubUrl} into ${tempDir}...`);
+
+  onProgress({
+    status: "cloning",
+    message: `Cloning repository: ${githubUrl}`,
+    percentage: 5,
+  });
 
   try {
     const git = simpleGit();
 
     await git.clone(githubUrl, tempDir, ["--depth", "1"]);
+
     console.log(`Successfully cloned repository`);
+    onProgress({
+      status: "cloning",
+      message: "Repository cloned successfully, analyzing files...",
+      percentage: 15,
+    });
 
     const documents: Document[] = [];
     let totalFiles = 0;
@@ -220,6 +239,14 @@ const loadRepoFilesLocally = async (githubUrl: string): Promise<Document[]> => {
     console.log(`   Code files processed: ${processedFiles}`);
     console.log(`   Files skipped: ${skippedFiles}`);
 
+    onProgress({
+      status: "processing",
+      message: `Found ${processedFiles} code files to process (${skippedFiles} skipped)`,
+      total: processedFiles,
+      current: 0,
+      percentage: 20,
+    });
+
     return documents;
   } catch (error) {
     console.error("Failed to clone or read repo:", error);
@@ -253,22 +280,43 @@ const loadRepoFilesLocally = async (githubUrl: string): Promise<Document[]> => {
 };
 
 // --- Step 2: Process files sequentially with retries and rate limiting ---
-const generateEmbeddings = async (docs: Document[]) => {
+const generateEmbeddings = async (
+  docs: Document[],
+  onProgress: (progress: IndexingProgress) => void
+) => {
   console.log(
     `\n🔄 Starting to process ${docs.length} files for embeddings...`
   );
 
   const embeddings = [];
-  const delayPerFile = 2400; // 2.4 seconds delay to respect rate limits
+  // const delayPerFile = 2400; // 2.4 seconds delay to respect rate limits
+  const total = docs.length;
 
   for (const [index, doc] of docs.entries()) {
     const progress = `[${index + 1}/${docs.length}]`;
+    const current = index + 1;
+    const basePercentage = 20; // Starting after file discovery
+    const processingRange = 60; // 20% to 80% for processing
+    const percentage =
+      basePercentage + Math.round((current / total) * processingRange);
+
     console.log(`${progress} Processing: ${doc.metadata.source}`);
+
+    onProgress({
+      status: "processing",
+      message: `Processing file ${current} of ${total}`,
+      current,
+      total,
+      currentFile: doc.metadata.source,
+      percentage,
+    });
 
     try {
       const processFile = async () => {
         const summary = await summariseCode(doc);
+        await delay(1100);
         const embedding = await generateEmbedding(summary);
+        await delay(50);
 
         return {
           summary,
@@ -289,26 +337,58 @@ const generateEmbeddings = async (docs: Document[]) => {
       embeddings.push(null);
     }
 
-    await new Promise((res) => setTimeout(res, delayPerFile));
+    // await new Promise((res) => setTimeout(res, delayPerFile));
   }
 
-  const Successfull = embeddings.filter((e) => e !== null).length;
-  const Failed = embeddings.filter((e) => e === null).length;
+  const successfull = embeddings.filter((e) => e !== null).length;
+  const failed = embeddings.filter((e) => e === null).length;
+
   console.log(
-    `\n📊 Current summary: Success: ${Successfull}, Failed: ${Failed}\n`
+    `\n📊 Current summary: Success: ${successfull}, Failed: ${failed}\n`
   );
+  onProgress({
+    status: "saving",
+    message: `Generated ${successfull} embeddings (${failed} failed). Starting database save...`,
+    current: successfull,
+    total: docs.length,
+    percentage: 80,
+  });
 
   return embeddings.filter((e) => e !== null);
 };
 
 // --- Step 3: Save to database with better error handling ---
-const saveEmbeddingsToDB = async (embeddings: any[], projectId: string) => {
+const saveEmbeddingsToDB = async (
+  embeddings: any[],
+  projectId: string,
+  onProgress: (progress: IndexingProgress) => void
+) => {
   console.log(`\n💾 Saving ${embeddings.length} embeddings to database...`);
 
   let savedCount = 0;
   let failedCount = 0;
+  const total = embeddings.length;
 
   for (const [index, embedding] of embeddings.entries()) {
+    const current = index + 1;
+    const basePercentage = 80; // Starting after processing
+    const savingRange = 15; // 80% to 95% for saving
+    const percentage =
+      basePercentage + Math.round((current / total) * savingRange);
+
+    // Update progress every 3 saves or on last item
+    if (current % 3 === 0 || current === total) {
+      onProgress({
+        status: "saving",
+        message: `Saving to database: ${
+          savedCount + failedCount
+        } of ${total} processed`,
+        current: savedCount + failedCount,
+        total,
+        currentFile: embedding.metadata.source,
+        percentage,
+      });
+    }
     try {
       const sourceCodeEmbedding = await prisma.sourceCodeEmbedding.create({
         data: {
@@ -328,14 +408,14 @@ const saveEmbeddingsToDB = async (embeddings: any[], projectId: string) => {
       savedCount++;
       console.log(
         `✅ [${index + 1}/${embeddings.length}] Saved: ${
-          embedding.embedding.metadata.source
+          embedding.metadata.source
         }`
       );
     } catch (error: any) {
       failedCount++;
       console.error(
         `❌ [${index + 1}/${embeddings.length}] Failed to save ${
-          embedding.fileName
+          embedding?.metadata?.source ?? "unknown"
         }: ${error.message}`
       );
     }
@@ -348,14 +428,30 @@ const saveEmbeddingsToDB = async (embeddings: any[], projectId: string) => {
   return { savedCount, failedCount };
 };
 
-// --- Main indexing function ---
-export const indexGithubRepo = async (projectId: string, githubUrl: string) => {
+// --- Main indexing function with Server Sent Events ---
+export const indexGithubRepoWithSSE = async (
+  projectId: string,
+  githubUrl: string,
+  onProgress: (progress: IndexingProgress) => void
+) => {
   console.log(`Starting GitWhiz Indexing Engine for: ${githubUrl}`);
   const overallStartTime = Date.now();
 
   try {
+    // Update database status to processing
+    await prisma.whizProject.update({
+      where: { id: projectId },
+      data: { status: "processing" },
+    });
+
+    onProgress({
+      status: "initialising",
+      message: "Starting repository indexing...",
+      percentage: 0,
+    });
+
     // 1. Clone repo and load files
-    const docs = await loadRepoFilesLocally(githubUrl);
+    const docs = await loadRepoFilesLocally(githubUrl, onProgress);
     if (docs.length === 0) {
       console.log("No documents found or failed to load repository");
       return {
@@ -365,7 +461,7 @@ export const indexGithubRepo = async (projectId: string, githubUrl: string) => {
     }
 
     // 2. Generate summaries and embeddings sequentially
-    const allEmbeddings = await generateEmbeddings(docs);
+    const allEmbeddings = await generateEmbeddings(docs, onProgress);
     if (allEmbeddings.length === 0) {
       console.log("Failed to generate any embeddings");
       return { success: false, error: "Failed to generate any embeddings" };
@@ -374,8 +470,17 @@ export const indexGithubRepo = async (projectId: string, githubUrl: string) => {
     // 3. Save embeddings to database
     const { savedCount, failedCount } = await saveEmbeddingsToDB(
       allEmbeddings,
-      projectId
+      projectId,
+      onProgress
     );
+
+    // Update database status to completed
+    await prisma.whizProject.update({
+      where: { id: projectId },
+      data: {
+        status: "completed",
+      },
+    });
 
     const totalTime = (Date.now() - overallStartTime) / 1000;
 
@@ -385,6 +490,17 @@ export const indexGithubRepo = async (projectId: string, githubUrl: string) => {
     console.log(`   Embeddings generated: ${allEmbeddings.length}`);
     console.log(`   Successfully saved: ${savedCount}`);
     console.log(`   Failed saves: ${failedCount}`);
+
+    // Final success update
+    onProgress({
+      status: "completed",
+      message: `Indexing completed! Processed ${savedCount} files in ${totalTime.toFixed(
+        1
+      )}s`,
+      current: savedCount,
+      total: docs.length,
+      percentage: 100,
+    });
 
     return {
       success: true,
@@ -398,6 +514,21 @@ export const indexGithubRepo = async (projectId: string, githubUrl: string) => {
     };
   } catch (error) {
     console.error("❌ Indexing failed:", error);
+    // Update database status to failed
+    await prisma.whizProject.update({
+      where: { id: projectId },
+      data: {
+        status: "failed",
+      },
+    });
+
+    // Send error progress update
+    onProgress({
+      status: "error",
+      message: "Indexing failed",
+      error: (error as any).message,
+      percentage: 0,
+    });
     return {
       success: false,
       error: (error as any).message,

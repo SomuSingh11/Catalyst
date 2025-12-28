@@ -4,7 +4,7 @@ import prisma from "@/lib/db";
 import { streamText } from "ai"; // Used to stream LLM responses
 import { createStreamableValue } from "ai/rsc"; // Create streamable value for RSC
 import { createGoogleGenerativeAI } from "@ai-sdk/google"; // Google Gemini wrapper
-import { generateEmbedding } from "@/lib/gemini"; // Custom function to generate vector embeddings from a question
+import { generateEmbedding } from "@/lib/services/gemini"; // Custom function to generate vector embeddings from a question
 
 // Initialize Gemini with API key from environment
 const google = createGoogleGenerativeAI({
