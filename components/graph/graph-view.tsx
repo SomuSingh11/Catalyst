@@ -11,8 +11,8 @@ import ReactFlow, {
 } from "reactflow";
 import "reactflow/dist/style.css";
 import { EnhancedFileNode } from "./utils/file-node";
-import { PrimarySidebar } from "./primary-sidebar";
-import { SecondarySidebar } from "./secondary-sidebar";
+import { PrimarySidebar } from "./sidebar/primary-sidebar";
+import { SecondarySidebar } from "./sidebar/secondary-sidebar";
 import { GraphPanel } from "./utils/graph-panel";
 import { LoadingGraphScreen } from "./utils/graph-loader";
 import { ErrorGraphScreen } from "./utils/graph-error";

@@ -98,6 +98,7 @@ export interface ParsedEntity {
     start: { line: number; column: number; index: number };
     end: { line: number; column: number; index: number };
   };
+  complexity?: number;
 
   language?: string;
   children?: ParsedEntity[] /** Child entities (e.g., methods in a class) */;
@@ -154,4 +155,6 @@ export interface FileMetrics {
   conditionalsCount: number;
   jsxElementCount: number;
   complexity: number;
+  maxComplexity: number;
+  highComplexityFunctions: number;
 }

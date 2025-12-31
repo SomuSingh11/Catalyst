@@ -314,7 +314,7 @@ const generateEmbeddings = async (
     try {
       const processFile = async () => {
         const summary = await summariseCode(doc);
-        await delay(1100);
+        await delay(5000);
         const embedding = await generateEmbedding(summary);
         await delay(50);
 

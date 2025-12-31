@@ -42,7 +42,7 @@ export async function askQuestion(question: string, projectId: string) {
   // Step 4: Use Gemini model to answer the question using the constructed context
   (async () => {
     const { textStream } = await streamText({
-      model: google("gemini-2.5-flash"),
+      model: google("gemini-2.5-flash-lite"), // Using Gemini 2.5 Flash model
       prompt: `
         You are a AI code assistant who answers questions about the codebase. Your target audience is a technical intern who is new to the codebase.
         ...

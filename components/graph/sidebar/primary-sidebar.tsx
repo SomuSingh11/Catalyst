@@ -1,8 +1,8 @@
 "use client";
 
 import { Node } from "reactflow";
-import { buildFileTreeFromNodes, FileTreeView } from "./utils/buildFileTree";
-import FileTreeSkeleton from "../utilities/filetree-skeleton";
+import { buildFileTreeFromNodes, FileTreeView } from "../utils/buildFileTree";
+import FileTreeSkeleton from "../../utilities/filetree-skeleton";
 
 import {
   Card,
@@ -59,7 +59,7 @@ export function PrimarySidebar({
   if (!isOpen) return null;
 
   return (
-    <div className="w-80 bg-gray-50 border-r border-gray-200 flex flex-col h-full overflow-hidden">
+    <div className="w-72 bg-gray-50 border-r border-gray-200 flex flex-col h-full overflow-hidden rounded-r-xl">
       <div className="p-2 border-b border-gray-200 bg-white">
         {/* Header Section */}
         <div className=" bg-white">

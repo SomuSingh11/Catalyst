@@ -277,8 +277,11 @@ export class EcmaScriptAnalyzer {
 
     const bodyNode = this.findChildByType(node, "statement_block");
     let relationships: ParsedEntity["relationships"] = [];
+    let complexity = 1;
+
     if (bodyNode) {
       relationships = this.extractCalls(bodyNode);
+      complexity = this.calculateFunctionComplexity(bodyNode);
     }
 
     return {
@@ -289,6 +292,7 @@ export class EcmaScriptAnalyzer {
       parameters,
       signature,
       relationships,
+      complexity,
     };
   }
 
@@ -510,7 +514,8 @@ export class EcmaScriptAnalyzer {
     let loopsCount = 0;
     let conditionalsCount = 0;
     let jsxElementCount = 0;
-    let complexity = 1;
+
+    const functionComplexities: number[] = [];
 
     const traverse = (node: SyntaxNode) => {
       const type = node.type;
@@ -521,6 +526,12 @@ export class EcmaScriptAnalyzer {
         type === "method_definition"
       ) {
         functionCount++;
+        const bodyNode = this.findChildByType(node, "statement_block");
+        if (bodyNode) {
+          const fnComplexity = this.calculateFunctionComplexity(bodyNode);
+          functionComplexities.push(fnComplexity);
+        }
+        return;
       }
 
       if (type === "class_declaration" || type === "class_expression") {
@@ -535,7 +546,6 @@ export class EcmaScriptAnalyzer {
         type === "for_of_statement"
       ) {
         loopsCount++;
-        complexity++;
       }
 
       if (
@@ -545,14 +555,12 @@ export class EcmaScriptAnalyzer {
         type === "ternary_expression"
       ) {
         conditionalsCount++;
-        complexity++;
       }
 
       if (type === "binary_expression") {
         const operatorNode = node.children?.[1]?.text;
         if (operatorNode === "&&" || operatorNode === "||") {
           conditionalsCount++;
-          complexity++;
         }
       }
 
@@ -566,6 +574,19 @@ export class EcmaScriptAnalyzer {
     };
     traverse(root);
 
+    const avgComplexity =
+      functionComplexities.length > 0
+        ? functionComplexities.reduce((a, b) => a + b, 0) /
+          functionComplexities.length
+        : 1;
+
+    const maxComplexity =
+      functionComplexities.length > 0 ? Math.max(...functionComplexities) : 1;
+
+    const highComplexityCount = functionComplexities.filter(
+      (c) => c >= 10
+    ).length;
+
     return {
       loc: source.split("\n").length,
       functionCount,
@@ -573,7 +594,61 @@ export class EcmaScriptAnalyzer {
       loopsCount,
       conditionalsCount,
       jsxElementCount,
-      complexity,
+      complexity: Math.round(avgComplexity),
+      maxComplexity,
+      highComplexityFunctions: highComplexityCount,
     };
+  }
+
+  /**
+   * Calculates cyclomatic complexity for a single function.
+   * Based on McCabe's formula: complexity = 1 + (decision points)
+   */
+  private calculateFunctionComplexity(bodyode: SyntaxNode): number {
+    let complexity = 1;
+
+    const traverse = (node: SyntaxNode) => {
+      const type = node.type;
+
+      if (
+        type === "for_statement" ||
+        type === "while_statement" ||
+        type === "do_statement" ||
+        type === "for_in_statement" ||
+        type === "for_of_statement"
+      ) {
+        complexity++;
+      }
+
+      if (
+        type === "if_statement" ||
+        type === "conditional_expression" ||
+        type === "ternary_expression"
+      ) {
+        complexity++;
+      }
+
+      if (type === "switch_case" && node.children.some((c) => c.type !== ":")) {
+        complexity++;
+      }
+
+      if (type === "binary_expression") {
+        const operator = node.children?.[1]?.text;
+        if (operator === "&&" || operator === "||") {
+          complexity++;
+        }
+      }
+
+      if (type === "catch_clause") {
+        complexity++;
+      }
+
+      for (const child of node.children) {
+        traverse(child);
+      }
+    };
+
+    traverse(bodyode);
+    return complexity;
   }
 }

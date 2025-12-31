@@ -50,10 +50,13 @@ export const graphRouter = createTRPCRouter({
         `[Graph API] Successfully parsed ${validResults.length} files.`
       );
 
+      //console.dir(validResults, { depth: null });
+
       const relBuilder = new RelationshipBuilder(validResults);
       const relationships = relBuilder.build();
 
       const graphData = transformToReactFlow(validResults, relationships);
+      //console.dir(graphData.edges, { depth: null });
 
       return {
         success: true,
