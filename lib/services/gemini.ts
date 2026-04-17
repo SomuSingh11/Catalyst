@@ -1,11 +1,16 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
+import { GoogleGenAI } from "@google/genai";
+
 import { Document } from "@langchain/core/documents";
 
 const genAI = new GoogleGenerativeAI(process.env.GOOGLE_GEMINI_KEY ?? "");
+const genAINew = new GoogleGenAI({
+  apiKey: process.env.GOOGLE_GEMINI_KEY ?? "",
+});
 
 // Get the model
 const model = genAI.getGenerativeModel({
-  model: "gemini-2.5-flash-lite",
+  model: "gemini-3.1-flash-lite-preview", //"gemini-2.5-flash-lite"
 });
 
 interface OutputFormat {
@@ -20,7 +25,7 @@ export async function strict_output(
   output_value_only: boolean = false,
   temperature: number = 1,
   num_tries: number = 3,
-  verbose: boolean = false
+  verbose: boolean = false,
 ) {
   // if the user input is in a list, we also process the output as a list of json
   const list_input: boolean = Array.isArray(user_prompt);
@@ -37,7 +42,7 @@ export async function strict_output(
       let output_format_prompt: string = `\nYou are to output ${
         list_output && "an array of objects in"
       } the following in json format: ${JSON.stringify(
-        output_format
+        output_format,
       )}. \nDo not put quotation marks or escape character \\ in the output fields.`;
 
       if (list_output) {
@@ -81,7 +86,7 @@ export async function strict_output(
       if (verbose) {
         console.log(
           "System prompt:",
-          system_prompt + output_format_prompt + error_msg
+          system_prompt + output_format_prompt + error_msg,
         );
         console.log("\nUser prompt:", user_prompt);
         console.log("\nGemini response:", res);
@@ -362,11 +367,15 @@ Before responding, verify:
   }
 }
 
-export async function generateEmbedding(summary: string) {
-  const model = genAI.getGenerativeModel({
-    model: "text-embedding-004",
+export async function generateEmbedding(summary: string): Promise<number[]> {
+  const response = await genAINew.models.embedContent({
+    model: "gemini-embedding-001",
+    contents: summary,
+    config: {
+      taskType: "RETRIEVAL_DOCUMENT",
+      outputDimensionality: 768, // matches your vector(768) schema
+    },
   });
-  const result = await model.embedContent(summary);
-  const embedding = result.embedding;
-  return embedding.values;
+
+  return response.embeddings![0].values!;
 }
