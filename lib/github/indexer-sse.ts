@@ -15,7 +15,7 @@ const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 const retryWithBackoff = async <T>(
   fn: () => Promise<T>,
   retries = 3,
-  delay = 1000
+  delay = 1000,
 ): Promise<T> => {
   try {
     return await fn();
@@ -24,7 +24,7 @@ const retryWithBackoff = async <T>(
       console.log(
         `Retrying in ${delay / 1000}s... (${retries} retries left) - ${
           error.message
-        }`
+        }`,
       );
       await new Promise((res) => setTimeout(res, delay));
       return retryWithBackoff(fn, retries - 1, delay * 2);
@@ -129,13 +129,16 @@ const isCodeFile = (fileName: string): boolean => {
     ".makefile",
     ".gradle",
     ".maven",
+    ".h",
+    ".md",
+    ".ini",
   ];
 
   const ext = path.extname(fileName).toLowerCase();
   return (
     codeExtensions.includes(ext) ||
     ["dockerfile", "makefile", "readme"].some((name) =>
-      fileName.toLowerCase().includes(name)
+      fileName.toLowerCase().includes(name),
     )
   );
 };
@@ -143,7 +146,7 @@ const isCodeFile = (fileName: string): boolean => {
 // --- Step 1: Clone repo and load files from local disk ---
 const loadRepoFilesLocally = async (
   githubUrl: string,
-  onProgress: (progress: IndexingProgress) => void
+  onProgress: (progress: IndexingProgress) => void,
 ): Promise<Document[]> => {
   const tempDir = await fs.mkdtemp(path.join(process.cwd(), "temp-repo-"));
   console.log(`Cloning ${githubUrl} into ${tempDir}...`);
@@ -217,11 +220,11 @@ const loadRepoFilesLocally = async (
                     size: content.length,
                     extension: path.extname(entry.name),
                   },
-                })
+                }),
               );
               processedFiles++;
               console.log(
-                `✅ Added: ${relativePath} (${content.length} chars)`
+                `✅ Added: ${relativePath} (${content.length} chars)`,
               );
             }
           } catch (error) {
@@ -258,7 +261,7 @@ const loadRepoFilesLocally = async (
         errorMsg.includes("permission")
       ) {
         throw new Error(
-          `Authentication failed. This might be a private repository. Please provide a GitHub token with access to this repo.`
+          `Authentication failed. This might be a private repository. Please provide a GitHub token with access to this repo.`,
         );
       }
     }
@@ -273,7 +276,7 @@ const loadRepoFilesLocally = async (
       console.warn(
         `⚠️  Failed to clean up temp directory: ${tempDir} : ${
           (error as any).message
-        }`
+        }`,
       );
     }
   }
@@ -282,10 +285,10 @@ const loadRepoFilesLocally = async (
 // --- Step 2: Process files sequentially with retries and rate limiting ---
 const generateEmbeddings = async (
   docs: Document[],
-  onProgress: (progress: IndexingProgress) => void
+  onProgress: (progress: IndexingProgress) => void,
 ) => {
   console.log(
-    `\n🔄 Starting to process ${docs.length} files for embeddings...`
+    `\n🔄 Starting to process ${docs.length} files for embeddings...`,
   );
 
   const embeddings = [];
@@ -332,7 +335,7 @@ const generateEmbeddings = async (
       console.log(`✅ ${progress} Completed: ${doc.metadata.source}`);
     } catch (error: any) {
       console.error(
-        `❌ ${progress} Failed to process ${doc.metadata.source}: ${error.message}`
+        `❌ ${progress} Failed to process ${doc.metadata.source}: ${error.message}`,
       );
       embeddings.push(null);
     }
@@ -344,7 +347,7 @@ const generateEmbeddings = async (
   const failed = embeddings.filter((e) => e === null).length;
 
   console.log(
-    `\n📊 Current summary: Success: ${successfull}, Failed: ${failed}\n`
+    `\n📊 Current summary: Success: ${successfull}, Failed: ${failed}\n`,
   );
   onProgress({
     status: "saving",
@@ -361,7 +364,7 @@ const generateEmbeddings = async (
 const saveEmbeddingsToDB = async (
   embeddings: any[],
   projectId: string,
-  onProgress: (progress: IndexingProgress) => void
+  onProgress: (progress: IndexingProgress) => void,
 ) => {
   console.log(`\n💾 Saving ${embeddings.length} embeddings to database...`);
 
@@ -409,14 +412,14 @@ const saveEmbeddingsToDB = async (
       console.log(
         `✅ [${index + 1}/${embeddings.length}] Saved: ${
           embedding.metadata.source
-        }`
+        }`,
       );
     } catch (error: any) {
       failedCount++;
       console.error(
         `❌ [${index + 1}/${embeddings.length}] Failed to save ${
           embedding?.metadata?.source ?? "unknown"
-        }: ${error.message}`
+        }: ${error.message}`,
       );
     }
   }
@@ -432,7 +435,7 @@ const saveEmbeddingsToDB = async (
 export const indexGithubRepoWithSSE = async (
   projectId: string,
   githubUrl: string,
-  onProgress: (progress: IndexingProgress) => void
+  onProgress: (progress: IndexingProgress) => void,
 ) => {
   console.log(`Starting GitWhiz Indexing Engine for: ${githubUrl}`);
   const overallStartTime = Date.now();
@@ -471,7 +474,7 @@ export const indexGithubRepoWithSSE = async (
     const { savedCount, failedCount } = await saveEmbeddingsToDB(
       allEmbeddings,
       projectId,
-      onProgress
+      onProgress,
     );
 
     // Update database status to completed
@@ -495,7 +498,7 @@ export const indexGithubRepoWithSSE = async (
     onProgress({
       status: "completed",
       message: `Indexing completed! Processed ${savedCount} files in ${totalTime.toFixed(
-        1
+        1,
       )}s`,
       current: savedCount,
       total: docs.length,

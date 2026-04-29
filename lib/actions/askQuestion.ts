@@ -4,7 +4,12 @@ import prisma from "@/lib/db";
 import { streamText } from "ai"; // Used to stream LLM responses
 import { createStreamableValue } from "ai/rsc"; // Create streamable value for RSC
 import { createGoogleGenerativeAI } from "@ai-sdk/google"; // Google Gemini wrapper
-import { generateEmbedding } from "@/lib/services/gemini"; // Custom function to generate vector embeddings from a question
+// import { generateEmbedding } from "@/lib/services/gemini"; // Custom function to generate vector embeddings from a question
+import { GoogleGenAI } from "@google/genai";
+
+const genAINew = new GoogleGenAI({
+  apiKey: process.env.GOOGLE_GEMINI_KEY ?? "",
+});
 
 // Initialize Gemini with API key from environment
 const google = createGoogleGenerativeAI({
@@ -15,7 +20,18 @@ export async function askQuestion(question: string, projectId: string) {
   const stream = await createStreamableValue();
 
   // Step 1: Convert question to a vector using Gemini Embedding API
-  const queryVector = await generateEmbedding(question);
+
+  // Use RETRIEVAL_QUERY for questions (different task type than documents)
+  const response = await genAINew.models.embedContent({
+    model: "gemini-embedding-001",
+    contents: question,
+    config: {
+      taskType: "RETRIEVAL_QUERY",
+      outputDimensionality: 768,
+    },
+  });
+
+  const queryVector = response.embeddings![0].values!;
   const vectorQuery = `[${queryVector.join(",")}]`;
 
   // Step 2: Find top 10 source code files most similar to the question vector
@@ -23,7 +39,7 @@ export async function askQuestion(question: string, projectId: string) {
     SELECT "fileName", "sourceCode", "summary",
     1-("summaryEmbedding" <=> ${vectorQuery}::vector) AS "similarity"
     FROM "SourceCodeEmbedding"
-    WHERE 1-("summaryEmbedding" <=> ${vectorQuery}::vector) > 0.5
+    WHERE 1-("summaryEmbedding" <=> ${vectorQuery}::vector) > 0.6
     AND "whizProjectId" = ${projectId}
     ORDER BY "similarity" DESC 
     LIMIT 10
@@ -42,19 +58,37 @@ export async function askQuestion(question: string, projectId: string) {
   // Step 4: Use Gemini model to answer the question using the constructed context
   (async () => {
     const { textStream } = await streamText({
-      model: google("gemini-2.5-flash-lite"), // Using Gemini 2.5 Flash model
+      model: google("gemini-3.1-flash-lite-preview"), // Using Gemini 3.1 Flash model //"gemini-3.1-flash-lite-preview"
       prompt: `
-        You are a AI code assistant who answers questions about the codebase. Your target audience is a technical intern who is new to the codebase.
-        ...
-        START CONTEXT BLOCK
-        ${context}
-        END OF CONTEXT BLOCK
+You are an expert software engineer helping a junior developer understand a codebase.
 
-        START QUESTION
-        ${question}
-        END OF QUESTION
-        ...
-      `,
+----------------------------------------
+🛑 RULES
+----------------------------------------
+- Use the provided context as the primary source
+- If something is missing, say so clearly and then explain generally
+- Do NOT hallucinate code that is not present
+
+----------------------------------------
+🧠 STYLE
+----------------------------------------
+- Answer naturally like a senior developer explaining code
+- Start with a direct answer in 1–2 sentences
+- Then explain step-by-step how the code works
+- Mention file names, functions, and flow naturally in the explanation
+- Include small code snippets ONLY when helpful
+- Keep the explanation detailed but easy to follow
+
+----------------------------------------
+📦 CONTEXT
+----------------------------------------
+${context}
+
+----------------------------------------
+❓ QUESTION
+----------------------------------------
+${question}
+`,
     });
 
     // Stream the response to the UI
