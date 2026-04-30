@@ -1,44 +1,51 @@
 /**
- * YOU PROBABLY DON'T NEED TO EDIT THIS FILE, UNLESS:
- * 1. You want to modify request context (see Part 1).
- * 2. You want to create a new middleware or type of procedure (see Part 3).
+ * Core tRPC Server Configuration
  *
- * TL;DR - This is where all the tRPC server stuff is created and plugged in. The pieces you will
- * need to use are documented accordingly near the end.
+ * This file sets up:
+ * - Request context
+ * - Error handling
+ * - Middleware (auth + observability)
+ * - Base procedure abstractions
+ *
+ * All routers and procedures build on top of these primitives.
  */
+
 import { auth } from "@clerk/nextjs/server";
 import { initTRPC, TRPCError } from "@trpc/server";
 import superjson from "superjson";
 import { ZodError } from "zod";
 
-import  prisma from "@/lib/db";
-const db = prisma;
+import prisma from "@/lib/db";
+
 
 /**
- * 1. CONTEXT
+ * ---------------------------------------
+ * 1. CONTEXT CREATION
+ * ---------------------------------------
  *
- * This section defines the "contexts" that are available in the backend API.
- *
- * These allow you to access things when processing a request, like the database, the session, etc.
- *
- * This helper generates the "internals" for a tRPC context. The API handler and RSC clients each
- * wrap this and provides the required context.
+ * - This section defines the "contexts" that are available in the backend API.
+ * - These allow you to access things when processing a request, like the database, the session, etc.
+ * - This helper generates the "internals" for a tRPC context. The API handler and RSC clients each
+ *   wrap this and provides the required context.
  *
  * @see https://trpc.io/docs/server/context
  */
 export const createTRPCContext = async (opts: { headers: Headers }) => {
   return {
-    db,
-    ...opts,
+    prisma,   // Prisma client instance
+    ...opts,  // Request-specific metadata
   };
 };
 
+
 /**
- * 2. INITIALIZATION
+ * ---------------------------------------
+ * 2. tRPC INITIALIZATION
+ * ---------------------------------------
  *
- * This is where the tRPC API is initialized, connecting the context and transformer. We also parse
- * ZodErrors so that you get typesafety on the frontend if your procedure fails due to validation
- * errors on the backend.
+ * - This is where the tRPC API is initialized, connecting the context and transformer. 
+ * - We also parse ZodErrors so that you get typesafety on the frontend if your procedure fails due to validation
+ *   errors on the backend.
  */
 const t = initTRPC.context<typeof createTRPCContext>().create({
   transformer: superjson,
@@ -54,48 +61,28 @@ const t = initTRPC.context<typeof createTRPCContext>().create({
   },
 });
 
-/**
- * Create a server-side caller.
- *
- * @see https://trpc.io/docs/server/server-side-calls
- */
-export const createCallerFactory = t.createCallerFactory;
 
 /**
- * 3. ROUTER & PROCEDURE (THE IMPORTANT BIT)
- *
- * These are the pieces you use to build your tRPC API. You should import these a lot in the
- * "/src/server/api/routers" directory.
+ * ---------------------------------------
+ * 3. CORE BUILDING BLOCKS
+ * ---------------------------------------
+ */
+export const createCallerFactory = t.createCallerFactory; // Enables server-side calls to procedures
+export const createTRPCRouter = t.router;                 // Router creator (used to define API modules)
+
+
+/**
+ * ---------------------------------------
+ * 4. MIDDLEWARE
+ * ---------------------------------------
  */
 
 /**
- * This is how you create new routers and sub-routers in your tRPC API.
+ * Timing & Debug Middleware
  *
- * @see https://trpc.io/docs/router
+ * - Logs execution time of each procedure
+ * - Simulates latency in development
  */
-export const createTRPCRouter = t.router;
-
-/**
- * Middleware for timing procedure execution and adding an artificial delay in development.
- *
- * You can remove this if you don't like it, but it can help catch unwanted waterfalls by simulating
- * network latency that would occur in production but not in local development.
- */
-
-const isAuthenticated = t.middleware(async ({ next, ctx }) => {
-  const user = await auth();
-
-  if (!user) {
-    throw new TRPCError({ code: "UNAUTHORIZED", message: "You must be logged in to access this resource" });
-  }
-  return next({
-    ctx:{
-      ...ctx,
-      user
-    }
-  });
-});
-
 const timingMiddleware = t.middleware(async ({ next, path }) => {
   const start = Date.now();
 
@@ -114,12 +101,47 @@ const timingMiddleware = t.middleware(async ({ next, path }) => {
 });
 
 /**
- * Public (unauthenticated) procedure
+ * Authentication Middleware
  *
- * This is the base piece you use to build new queries and mutations on your tRPC API. It does not
- * guarantee that a user querying is authorized, but you can still access user session data if they
- * are logged in.
+ * Ensures user is authenticated before accessing protected routes.
+ * Injects user object into context for downstream usage.
+ */
+const isAuthenticated = t.middleware(async ({ next, ctx }) => {
+  const { userId } = await auth();
+
+  if (!userId) {
+    throw new TRPCError({ code: "UNAUTHORIZED", message: "You must be logged in to access this resource" });
+  }
+  return next({
+    ctx:{
+      ...ctx,
+      userId
+    }
+  });
+});
+
+
+
+/**
+ * ---------------------------------------
+ * 5. PROCEDURE TYPES
+ * ---------------------------------------
+ */
+
+/**
+ * Public Procedure
+ *
+ * - No authentication required
+ * - Includes timing middleware
  */
 export const publicProcedure = t.procedure.use(timingMiddleware);
 
-export const protectedProcedure = t.procedure.use(isAuthenticated);
+/**
+ * Protected Procedure
+ *
+ * - Requires authentication
+ * - Automatically provides `ctx.user`
+ */
+export const protectedProcedure = t.procedure
+  .use(timingMiddleware)  
+  .use(isAuthenticated);
