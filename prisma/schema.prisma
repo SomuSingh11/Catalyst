@@ -6,57 +6,225 @@ generator client {
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
-  extensions = [vector]
+  extensions = [vector, pg_trgm]
 }
 
-model User {
-  id        String         @id @default(uuid()) // Use this for relationships
-  userId    String         @unique // Keep this for Clerk auth only
+// ============================================================
+// AUTH / USER
+// ============================================================
 
+model User {
+  id        String         @id @default(uuid()) 
+  userId    String         @unique //Clerk ID
   name      String
   username  String         @unique
   imageUrl  String
   email     String
 
-  createAt  DateTime       @default(now())
+  createdAt  DateTime       @default(now())
   updatedAt DateTime       @updatedAt
 
-  quizzy    Quizzy[]
-  progress  UserProgress[]
-  whizSavedQuestions WhizSavedQuestion[]
-  userToProjects UserToProject[]
-
-  credits Int @default(150)
+  quizzy              Quizzy[]
+  conceptMastery      UserConceptMastery[]
+  whizSavedQuestions  WhizSavedQuestion[]
+  userToProjects      UserToProject[]
 }
 
-model leetcodeQuestion {
-  id               Int            @id @default(autoincrement())
-  name             String
-  questionId       Int            @unique
-  difficulty       String
-  tags             String
-  companyTags      String
-  questionURL      String
-  listTags         String
-  questionSlug     String
-  similarQuestions String
-  leetCodePatterns String
-  userProgress     UserProgress[]
+
+// ============================================================
+// GITWHIZ — PROJECTS
+// ============================================================
+
+model WhizProject{
+  id            String @id @default(uuid())
+  name          String
+  githubUrl     String
+  githubToken   String?
+
+  // Indexing state
+  status        ProjectStatus @default(PENDING)
+  indexedAt     DateTime?
+
+  createdAt      DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  deletedAt     DateTime?
+
+  userToProjects        UserToProject[]
+  quizzes               Quizzy[]
+  commits               WhizCommit[]
+  savedQuestions        WhizSavedQuestion[]
+  codeChunks            CodeChunk[]
+  indexingJobs          IndexingJob[]
 }
 
-model UserProgress {
-  id         String           @id @default(uuid())
-  userId     String
-  questionId Int
-  finished   Boolean          @default(false)
-  category   String
-  createdAt  DateTime         @default(now())
-  updatedAt  DateTime         @updatedAt
-  question   leetcodeQuestion @relation(fields: [questionId], references: [id])
-  user       User             @relation(fields: [userId], references: [id])
-
-  @@unique([userId, questionId])
+enum ProjectStatus {
+  PENDING
+  INDEXING
+  INDEXED
+  FAILED
 }
+
+model UserToProject{
+  id          String    @id @default(uuid())
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  userId        String
+  whizProjectId String
+
+  user          User          @relation(fields: [userId], references: [id])
+  whizProject   WhizProject   @relation(fields: [whizProjectId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, whizProjectId])
+}
+
+
+// ============================================================
+// INDEXING JOB — tracks progress 
+// ============================================================
+
+model IndexingJob {
+  id            String    @id @default(uuid())
+  projectId     String
+  status        JobStatus @default(QUEUED)
+
+  // Progress tracking
+  phase         String    @default("queued")  // queued|cloning|parsing|chunking|embedding|storing|done
+  progress      Int       @default(0)         // 0-100
+  totalChunks   Int       @default(0)
+  doneChunks    Int       @default(0)
+  totalFiles    Int       @default(0)
+  doneFiles     Int       @default(0)
+
+  errorMessage  String?
+  startedAt     DateTime?
+  completedAt   DateTime?
+  createdAt     DateTime  @default(now())
+
+  project       WhizProject @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([projectId])
+  @@index([status])
+}
+
+enum JobStatus {
+  QUEUED
+  RUNNING
+  COMPLETED
+  FAILED
+  CANCELLED
+}
+
+
+// ============================================================
+// CODE CHUNKS — entity-level
+// ============================================================
+
+model CodeChunk {
+  id          String  @id @default(uuid())
+  projectId   String
+
+  // Source location
+  filePath    String
+  language    String
+  startLine   Int
+  endLine     Int
+
+  // Chunk classification
+  chunkType   ChunkType
+  entityName  String?   // function/class name
+  parentName  String?   // class name if this is a method
+
+  // Content (what gets embedded and shown to LLM)
+  rawCode     String    // actual source of the chunk
+  signature   String?   // class/function signature
+  docstring   String?   // extracted JSDoc / comments above entity
+  fileSummary String?   // only on FILE_SUMMARY chunks
+
+  // Metrics
+  complexity  Int?
+  tokenCount  Int?
+  linesOfCode Int?
+
+  // Two embeddings per chunk:
+  // codeEmbedding -> embed rawCode (finds exact implementation)
+  // contextEmbedding -> embed signature+docstring+filePath (finds by intent)
+  codeEmbedding     Unsupported("vector(768)")?
+  contextEmbedding  Unsupported("vector(768)")?
+
+  // Full-text search vector (pg_trgm + tsvector)
+  searchVector  Unsupported("tsvector")?
+
+  createdAt      DateTime  @default(now())
+
+  project       WhizProject @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([projectId])
+  @@index([projectId, filePath])
+  @@index([projectId, chunkType])
+  @@index([projectId, entityName])
+  @@index([searchVector], type: Gin)
+}
+
+enum ChunkType {
+  FILE_SUMMARY
+  FUNCTION
+  CLASS
+  METHOD
+  INTERFACE
+  TYPE_ALIAS
+  CONSTANT
+  IMPORT_GROUP
+}
+
+
+// ============================================================
+// COMMITS
+// ============================================================
+
+model WhizCommit{
+  id            String      @id @default(uuid())
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  whizProjectId String
+  whizProject   WhizProject @relation(fields: [whizProjectId], references: [id], onDelete: Cascade)
+
+  commitMessage       String
+  commitHash          String
+  commitAuthorName    String
+  commitAuthorAvatar  String
+  commitDate          DateTime
+
+  summary             String              // AI Generated Response
+  impactScore         Int     @default(0) //1-10, how significant is this commit
+  changedFiles        String[]
+  commitType          String?             // feat|fix|refactor|docs|test|chore
+
+  @@unique([whizProjectId, commitHash])
+  @@index([whizProjectId])  
+}
+
+model WhizSavedQuestion{
+  id            String @id @default(uuid())
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  question        String
+  answer          String
+  filesReferences Json?
+
+  whizProjectId String
+  whizProject   WhizProject @relation(fields: [whizProjectId], references: [id], onDelete: Cascade)
+
+  userId String
+  user User @relation(fields: [userId], references: [id])
+}
+
+
+// ============================================================
+// QUIZZY — context-aware quiz system
+// ============================================================
 
 model Quizzy {
   id              String           @id @default(uuid())
@@ -65,25 +233,44 @@ model Quizzy {
   topic           String
   timeStarted     DateTime
   timeEnded       DateTime?
+
+  projectId       String?             // null=generic | set=codebase-grounded
+  project         WhizProject?        @relation(fields: [projectId], references: [id])
+  difficulty      Int                 @default(1) // 1-5
+  conceptTags     String[]            // topics this quiz covers 
+
   user            User             @relation(fields: [userId], references: [id], onDelete: Cascade)
   quizzyQuestions QuizzyQuestion[]
 
-  @@index([userId], map: "userId")
+  @@index([userId])
+  @@index([userId, projectId])
 }
 
 model QuizzyQuestion {
   id                String   @id @default(uuid())
   quizzyId          String
+  quizzy            Quizzy   @relation(fields: [quizzyId], references: [id], onDelete: Cascade)
+
   question          String
   answer            String
   options           Json?
-  percentageCorrect Float?
   questionType      GameType
+
   userAnswer        String?
   isCorrect         Boolean?
-  quizzy            Quizzy   @relation(fields: [quizzyId], references: [id], onDelete: Cascade)
 
-  @@index([quizzyId], map: "quizzyId")
+  semanticScore     Float?
+  percentageCorrect Float?
+
+  // Context aware fields
+  sourceChunkIds    String[]               // which codeChunks this question checks
+  difficulty        Int       @default(1) // 1-5
+  conceptTage       String[]               // ["useState", "React hooks"]
+  codeSnippet       String?                // the actual code excerpt the question is about
+  explanation       String?                // AI explanation of why answer is correct
+
+  
+  @@index([quizzyId])
 }
 
 enum GameType {
@@ -91,79 +278,25 @@ enum GameType {
   open_ended
 }
 
-model WhizProject{
-  id            String @id @default(uuid())
-  name          String
-  githubUrl     String
-  githubToken   String?
-  status        String @default("pending") 
 
-  createAt      DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-  deletedAt     DateTime?
+// ============================================================
+// MASTERY TRACKING
+// ============================================================
 
-  userToProjects          UserToProject[]
-  commits                 WhizCommit[]
-  savedQuestions          WhizSavedQuestion[]
-  sourceCodeEmbeddings    SourceCodeEmbedding[]
-}
+model UserConceptMastery {
+  id      String   @id  @default(uuid())
+  userId  String
+  concept String   // "React hooks", "async/await", "useGraphData"
 
-model UserToProject{
-  id String @id @default(uuid())
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  mastery       Float     @default(0.0) // 0.0-1.0
+  attempts      Int       @default(0)
+  correctCount  Int       @default(0)
+  lastSeen      DateTime  @default(now())
+  lastScore     Float?
 
-  userId String
-  whizProjectId String
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  user User @relation(fields: [userId], references: [id])
-  whizProject WhizProject @relation(fields: [whizProjectId], references: [id], onDelete: Cascade)
-
-  @@unique([userId, whizProjectId])
-}
-
-model SourceCodeEmbedding{
-  id               String @id @default(uuid())
-
-  summaryEmbedding Unsupported("vector(768)")?
-  sourceCode       String 
-  fileName         String //filePath
-  summary          String
-
-  whizProjectId    String
-  whizProject WhizProject @relation(fields: [whizProjectId], references: [id], onDelete: Cascade)
-}
-
-model WhizCommit{
-  id            String      @id @default(uuid())
-  createdAt     DateTime    @default(now())
-  updatedAt     DateTime    @updatedAt
-
-  whizProjectId String
-  whizProject WhizProject @relation(fields: [whizProjectId], references: [id], onDelete: Cascade)
-
-  commitMessage       String
-  commitHash          String
-  commitAuthorName    String
-  commitAuthorAvatar  String
-  commitDate          DateTime
-
-  summary             String   // AI Generated Response
-}
-
-model WhizSavedQuestion{
-  id            String @id @default(uuid())
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-
-  question String
-  answer String
-
-  filesReferences Json?
-
-  whizProjectId String
-  whizProject WhizProject @relation(fields: [whizProjectId], references: [id], onDelete: Cascade)
-
-  userId String
-  user User @relation(fields: [userId], references: [id])
+  @@unique([userId, concept])
+  @@index([userId])
+  @@index([userId, mastery])  // find weak spots fast
 }
