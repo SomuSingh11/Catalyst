@@ -1,381 +1,513 @@
-import { GoogleGenerativeAI } from "@google/generative-ai";
 import { GoogleGenAI } from "@google/genai";
 
-import { Document } from "@langchain/core/documents";
+if(!process.env.GOOGLE_GEMINI_KEY) {
+  throw new Error("Google_GEMINI_KEY environment variable is required")
+}
 
-const genAI = new GoogleGenerativeAI(process.env.GOOGLE_GEMINI_KEY ?? "");
-const genAINew = new GoogleGenAI({
+const genAI = new GoogleGenAI({
   apiKey: process.env.GOOGLE_GEMINI_KEY ?? "",
 });
 
-// Get the model
-const model = genAI.getGenerativeModel({
-  model: "gemini-3.1-flash-lite-preview", //"gemini-2.5-flash-lite"
-});
+const FLASH_MODEL = "gemini-3.1-flash-lite-preview";
+const EMBEDDING_MODEL = "text-embedding-001";
 
-interface OutputFormat {
-  [key: string]: string | string[] | OutputFormat;
+
+// ─── Rate limit state ────────────────────────────────────────
+// Free tier: 15 RPM for generation, 1500 RPD for embedding
+// We track calls and back off when needed
+
+interface RateLimitState {
+  calls: number[],        // timestamps of recent calls
+  rpm: number,            // max requests per minute
+  minDelayMs: number      // minimum delay between calls
 }
 
-export async function strict_output(
-  system_prompt: string,
-  user_prompt: string | string[],
-  output_format: OutputFormat,
-  default_category: string = "",
-  output_value_only: boolean = false,
-  temperature: number = 1,
-  num_tries: number = 3,
-  verbose: boolean = false,
-) {
-  // if the user input is in a list, we also process the output as a list of json
-  const list_input: boolean = Array.isArray(user_prompt);
-  // if the output format contains dynamic elements of < or >, then add to the prompt to handle dynamic elements
-  const dynamic_elements: boolean = /<.*?>/.test(JSON.stringify(output_format));
-  // if the output format contains list elements of [ or ], then we add to the prompt to handle lists
-  const list_output: boolean = /\[.*?\]/.test(JSON.stringify(output_format));
+// Separate rate limit configs for different API types
+const genState: RateLimitState = {calls: [], rpm: 14, minDelayMs: 4500};
+const embState: RateLimitState = {calls: [], rpm: 100, minDelayMs: 650};
 
-  // start off with no error message
-  let error_msg: string = "";
+// ─── Helper: Remove outdated calls ───────────────────────────
+function pruneOldCalls(state: RateLimitState) {
+  const cutoff = Date.now() - 60_000;
+  state.calls = state.calls.filter((t) => t > cutoff);
+}
 
-  for (let i = 0; i < num_tries; i++) {
-    try {
-      let output_format_prompt: string = `\nYou are to output ${
-        list_output && "an array of objects in"
-      } the following in json format: ${JSON.stringify(
-        output_format,
-      )}. \nDo not put quotation marks or escape character \\ in the output fields.`;
 
-      if (list_output) {
-        output_format_prompt += `\nIf output field is a list, classify output into the best element of the list.`;
-      }
+// ─── Core: Wait until it's safe to make a request ─────────────
+// This function enforces BOTH:
+// 1. Max requests per minute (RPM)
+// 2. Minimum delay between consecutive calls
 
-      // if output_format contains dynamic elements, process it accordingly
-      if (dynamic_elements) {
-        output_format_prompt += `\nAny text enclosed by < and > indicates you must generate content to replace it. Example input: Go to <location>, Example output: Go to the garden\nAny output key containing < and > indicates you must generate the key name to replace it. Example input: {'<location>': 'description of location'}, Example output: {school: a place for education}`;
-      }
+async function waitForSlot(state: RateLimitState) {
+  // Step 1: Clean up the old calls
+  pruneOldCalls(state);
+  
+  // Step 2: Check if we've hit the per-minute limit
+  if(state.calls.length >= state.rpm) {
+    // Oldest request in the current 1-minute window
+    const oldest = state.calls[0];
+    const waitMs = 60_000 - (Date.now() - oldest) + 200;
+    if(waitMs > 0) {
+      console.log(`[Gemini] Rate limit: waiting ${waitMs}ms`);
+      await sleep(waitMs);
+    }
+    pruneOldCalls(state);
+  }
 
-      // if input is in a list format, ask it to generate json in a list
-      if (list_input) {
-        output_format_prompt += `\nGenerate an array of json, one json for each input element.`;
-      }
-
-      // Combine prompts for Gemini
-      const fullPrompt = `${system_prompt}${output_format_prompt}${error_msg}\n\nUser request: ${
-        Array.isArray(user_prompt) ? user_prompt.join("\n") : user_prompt
-      }`;
-
-      if (verbose) {
-        console.log("Full prompt:", fullPrompt);
-      }
-
-      // Generate content with Gemini
-      const result = await model.generateContent({
-        contents: [{ role: "user", parts: [{ text: fullPrompt }] }],
-        generationConfig: {
-          temperature: temperature,
-        },
-      });
-
-      const response = await result.response;
-      // eslint-disable-next-line prefer-const
-      let res: string = response
-        .text()
-        .replace(/'/g, '"')
-        .replace(/(\w)"(\w)/g, "$1'$2");
-
-      if (verbose) {
-        console.log(
-          "System prompt:",
-          system_prompt + output_format_prompt + error_msg,
-        );
-        console.log("\nUser prompt:", user_prompt);
-        console.log("\nGemini response:", res);
-      }
-
-      // Try to parse the response as JSON
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      let output: any;
-      try {
-        // First try direct parsing
-        output = JSON.parse(res);
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      } catch (parseError) {
-        // If direct parsing fails, try to extract JSON from the response
-        const jsonMatch = res.match(/\{[\s\S]*\}|\[[\s\S]*\]/);
-        if (jsonMatch) {
-          output = JSON.parse(jsonMatch[0]);
-        } else {
-          throw new Error("Failed to parse response as JSON");
-        }
-      }
-
-      if (list_input) {
-        if (!Array.isArray(output)) {
-          throw new Error("Output format not in an array of json");
-        }
-      } else {
-        output = [output];
-      }
-
-      // check for each element in the output_list, the format is correctly adhered to
-      for (let index = 0; index < output.length; index++) {
-        for (const key in output_format) {
-          // unable to ensure accuracy of dynamic output header, so skip it
-          if (/<.*?>/.test(key)) {
-            continue;
-          }
-
-          // if output field missing, raise an error
-          if (!(key in output[index])) {
-            throw new Error(`${key} not in json output`);
-          }
-
-          // check that one of the choices given for the list of words is an unknown
-          if (Array.isArray(output_format[key])) {
-            const choices = output_format[key] as string[];
-            // ensure output is not a list
-            if (Array.isArray(output[index][key])) {
-              output[index][key] = output[index][key][0];
-            }
-            // output the default category (if any) if Gemini is unable to identify the category
-            if (!choices.includes(output[index][key]) && default_category) {
-              output[index][key] = default_category;
-            }
-            // if the output is a description format, get only the label
-            if (output[index][key].includes(":")) {
-              output[index][key] = output[index][key].split(":")[0];
-            }
-          }
-        }
-
-        // if we just want the values for the outputs
-        if (output_value_only) {
-          output[index] = Object.values(output[index]);
-          // just output without the list if there is only one element
-          if (output[index].length === 1) {
-            output[index] = output[index][0];
-          }
-        }
-      }
-
-      return list_input ? output : output[0];
-    } catch (e) {
-      error_msg = `\n\nResult: ${e instanceof Error ? e.message : e}`;
-      console.log("An exception occurred:", e);
-
-      // If this is the last try, throw the error
-      if (i === num_tries - 1) {
-        throw e;
-      }
+  // Enforce minimum inter-call delay
+  if(state.calls.length > 0) {
+    const lastCall = state.calls[state.calls.length-1]!;
+    const elapsed = Date.now() - lastCall;
+    if (elapsed < state.minDelayMs) {
+      await sleep(state.minDelayMs - elapsed);
     }
   }
-
-  throw new Error("Failed to generate response after all retries");
+  state.calls.push(Date.now());
 }
 
-// aiSummariseCommit function is function that uses an AI model to generate a summary of a Git diff—i.e., a set of code changes from a Git commit.
-export const aiSummariseCommit = async (diff: string) => {
-  const response = await model.generateContent([
-    `You are an expert programmer, and you are trying to summarize a git diff.
-  Reminders about the git diff format:
-  For every file, there are a few metadata lines, like (for example):
-  \`\`\`
-  diff --git a/lib/index.js b/lib/index.js
-  index aadf691..bfef603 100644
-  --- a/lib/index.js
-  +++ b/lib/index.js
-  \`\`\`
-  This means that \`lib/index.js\` was modified in this commit. Note that this is only an example.
-  Then there is a specifier of the lines that were modified.
-  A line starting with \`+\` means it was added.
-  A line that starting with \`-\` means that line was deleted.
-  A line that starts with neither \`+\` nor \`-\` is code given for context and better understanding.
-  It is not part of the diff.
-  [...]
-  EXAMPLE SUMMARY COMMENTS:
-  \`\`\`
-  * Raised the amount of returned recordings from \`10\` to \`100\` [packages/server/recordings_api.ts], [packages/server/constants.ts]
-  * Fixed a typo in the github action name [.github/workflows/gpt-commit-summarizer.yml]
-  * Moved the \`octokit\` initialization to a separate file [src/octokit.ts], [src/index.ts]
-  * Added an OpenAI API for completions [packages/utils/apis/openai.ts]
-  * Lowered numeric tolerance for test files
-  \`\`\`
-  Most commits will have less comments than this examples list.
-  The last comment does not include the file names,
-  because there were more than two relevant files in the hypothetical commit.
-  Do not include parts of the example in your summary.
-  It is given only as an example of appropriate comments.`,
-    `Please summarise the following diff file: \n\n${diff}`,
-  ]);
-  return response.response.text();
+function sleep(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+
+// ─── Retry wrapper ───────────────────────────────────────────
+
+async function withRetry<T>(
+  fn: () => Promise<T>,
+  retries = 4,
+  baseDelay = 2000
+): Promise<T> {
+  for(let attempt = 0; attempt <= retries; attempt++) {
+    try {
+      return await fn();
+    } catch (error: unknown) {
+      const isLastAttempt = attempt == retries;
+      const err = error as {status?: number; message?: string};
+
+      // Don't retry on non-retryable errors
+      if(err?.status === 400 || err?.status === 404) throw err;
+      if(isLastAttempt) throw err;
+
+      // Exponential backoff with jitter
+      const delay = baseDelay + Math.pow(2, attempt) + Math.random() * 1000;
+      console.warn(
+        `[Gemini] Attempt ${attempt + 1} failed: ${err?.message}. Retrying in ${Math.round(delay)}ms`
+      );
+      await sleep(delay);
+    }
+  }
+  throw new Error("Unreachable");
+}
+
+
+// ─── Embedding ───────────────────────────────────────────────
+
+export async function generateEmbedding(text: string): Promise<number[]> {
+  // Truncate to 8000 character to stay within the token limits
+  const truncated = text.slice(0, 8000);
+  await waitForSlot(embState);
+
+  return withRetry(async() => {
+    const result = await genAI.models.embedContent({
+      model: EMBEDDING_MODEL,
+      contents: truncated,
+      config: {
+        taskType: "RETRIEVAL_DOCUMENT",
+        outputDimensionality: 768
+      }
+    });
+
+    return result.embeddings![0].values!;
+  });
 };
 
-export async function summariseCode(doc: Document) {
-  const code = doc.pageContent.slice(0, 10000);
-  console.log("summarise code ----------------------");
-  console.log("source code for file:", doc.metadata.source, code);
+/**
+ * Batch embed multiple texts. Processes in groups to respect rate limits.
+ * Returns embeddings in the same order as input.
+ */
 
-  try {
-    const response = await model.generateContent([
-      `
-## ROLE & GOAL
-You are a code analysis AI creating dual-purpose summaries:
-1. **For RAG/Vector Search**: Semantically rich, question-answerable content that helps retrieve this file when users ask natural language questions
-2. **For Frontend Display**: Clean, scannable markdown that developers can read and navigate
+export async function batchGenerateEmbeddings(
+  texts: string[],
+  onProgress: (done: number, total: number) => void
+): Promise<Array<number[] | null>> {
+  const results: Array<number[] | null> = new Array(texts.length).fill(null);
+  const BATCH_SIZE = 10;
 
-**Critical Balance**: Write in natural, flowing language (good for embeddings) while maintaining clear structure (good for UI rendering).
+  for(let i = 0; i < texts.length; i += BATCH_SIZE) {
+    const batch = texts.slice(i, i+BATCH_SIZE);
+    const batchResults = await Promise.allSettled(
+      batch.map((text) => generateEmbedding(text))
+    );
 
-## TASK
-Analyze this source file: \`${doc.metadata.source}\`
+    batchResults.forEach((result, idx) => {
+      if(result.status === "fulfilled") {
+        results[i + idx] = result.value;
+      } else {
+        console.error(`[Embedding] Failed for index ${i + idx}:`, result.reason);
+        results[i + idx] = null;
+      }
+    });
 
-### SOURCE CODE
----
-${code}
----
+    onProgress?.(Math.min(i + BATCH_SIZE, texts.length), texts.length);
+  }
 
-## OUTPUT FORMAT
-Use this **exact markdown structure**. Write each section in natural, explanatory language (not just bullet points).
-
----
-
-## **📋 Overview**
-[Write 3-4 sentences explaining what this file does, why it exists, and when developers would interact with it. Use natural language as if explaining to a teammate. Include the problem it solves and its role in the application architecture.]
-
----
-
-## **🎯 Core Purpose**
-[A detailed paragraph (4-6 sentences) describing the file's primary technical purpose and how it accomplishes it. Use varied terminology and explain both WHAT it does and HOW it works. This should answer questions like "What does this file handle?" and "How does it implement [feature]?"]
-
----
-
-## **🏗️ Architecture & Pattern**
-**Design Pattern**: [If applicable, identify the pattern (e.g., "Middleware Pattern", "Custom React Hook", "Service Layer", "Repository Pattern"). If not applicable, state "N/A"]
-
-**Architectural Role**: [2-3 sentences explaining how this fits into the broader system architecture. Use language like "serves as", "connects", "orchestrates", etc.]
-
----
-
-## **⚙️ Key Components & Logic**
-
-${
-  "" /* For each major export, write 2-3 descriptive sentences, not just bullets */
+  return results;
 }
 
-### \`functionOrClassName\`
-[Describe what it does, when you'd use it, key parameters, return values, and its purpose in the system. Write as if documenting for a team wiki.]
 
-### \`anotherComponentName\`
-[Same approach - natural language explanation that answers questions like "What does X do?" "When would I use Y?" "How does Z work?"]
+// ─── Chunk summarization ───────────────────────────────────────────────
 
-${"" /* Continue for all major exports - aim for 3-7 key components */}
+export async function summariseChunk(input: 
+  {
+    filePath: string;
+    language: string;
+    chunkType: string;
+    entityName?: string;
+    rawCode: string;
+    signature?: string
+  }
+): Promise<string> {
+  const {filePath, language, chunkType, entityName, rawCode, signature} = input;
 
----
+  // Only summarize meaningful chunk types — skip imports/constants
+  if(chunkType === "IMPORT_GROUP" || chunkType === "CONSTANT") {
+    return signature || rawCode.slice(0, 200);
+  }
 
-## **🔧 Implementation Details**
+  await waitForSlot(genState);
 
-**Technical Approach**: [Paragraph describing the implementation strategy, algorithms, or patterns used. Explain WHY this approach was chosen if evident from the code.]
+  return withRetry(async() => {
+    const prompt =buildChunkSummaryPrompt({
+      filePath,
+      language,
+      chunkType,
+      entityName,
+      rawCode: rawCode.slice(0, 4000),
+      signature
+    });
 
-**State Management**: [How data flows through this code, any state tracking, caching strategies]
+    const result = await genAI.models.generateContent({
+      model: FLASH_MODEL,
+      contents: prompt
+    });
 
-**Performance Considerations**: [Any optimization patterns, async handling, memoization, etc. Write "None significant" if not applicable]
 
----
+    return result?.text?.trim() || "";
+  });
+}
 
-## **🔌 Dependencies & Integration**
+function buildChunkSummaryPrompt(input: {
+  filePath: string;
+  language: string;
+  chunkType: string;
+  entityName?: string;
+  rawCode: string;
+  signature?: string;
+}): string {
+  return `You are a code analysis AI. Write a concise technical summary of this ${input.chunkType.toLowerCase()} from ${input.filePath}.
+ 
+  ${input.signature ? `Signature: ${input.signature}\n` : ""}
+  Language: ${input.language}
+  ${input.entityName ? `Name: ${input.entityName}\n` : ""}
+  
+  Source:
+  \`\`\`${input.language}
+  ${input.rawCode}
+  \`\`\`
+  
+  Write 2-4 sentences covering:
+  1. What this ${input.chunkType.toLowerCase()} does
+  2. Key parameters/inputs and what it returns or produces
+  3. Important side effects, dependencies, or patterns used
+  4. When a developer would use or modify this
+  
+  Be precise. Use technical terminology. Include the actual function/class name in your response.
+  No markdown headers. Plain paragraph.`;
+}
 
-**External Libraries**:
-- **\`library-name\`**: [Not just "used for X" but "enables this file to accomplish Y by providing Z functionality"]
-${"" /* List 3-7 key dependencies with context */}
 
-**Internal Connections**: [Paragraph explaining how this file integrates with other parts of the codebase. Use phrases like "consumed by", "depends on", "provides services to", "coordinates with". This helps answer "how does X connect to Y?" questions.]
+// ─── File-level summary (for FILE_SUMMARY chunks) ────────────
+ 
+export async function summarizeFile(input: {
+  filePath: string;
+  language: string;
+  entities: Array<{ name: string; type: string; signature?: string }>;
+  rawCode: string;
+}): Promise<string> {
+  await waitForSlot(genState);
+ 
+  const entityList = input.entities
+    .slice(0, 20)
+    .map((e) => `- ${e.type}: ${e.name}${e.signature ? ` (${e.signature})` : ""}`)
+    .join("\n");
+ 
+  return withRetry(async () => {
+    const result = await genAI.models.generateContent({
+      model: FLASH_MODEL,
+      contents: `Summarize this source file for a developer knowledge base.
+ 
+    File: ${input.filePath}
+    Language: ${input.language}
+    
+    Exported entities:
+    ${entityList}
+    
+    Code preview (first 2000 chars):
+    \`\`\`
+    ${input.rawCode.slice(0, 2000)}
+    \`\`\`
+    
+    Write 3-5 sentences covering:
+    1. The file's primary responsibility in the application
+    2. The most important exports and what they do
+    3. Key dependencies and integration points
+    4. Common scenarios where a developer would look at this file
+    
+    Be specific, use the actual names. Plain paragraph, no markdown.`
+    });
+    return result.text?.trim() || "";
+  });
+}
 
-**Related Files**: [List 2-5 related files a developer should understand alongside this one, with brief context why]
 
----
+ 
+// ─── Commit summarization (improved) ─────────────────────────
+ 
+export async function summarizeCommit(diff: string): Promise<{
+  summary: string;
+  commitType: string;
+  impactScore: number;
+  changedFiles: string[];
+}> {
+  await waitForSlot(genState);
+ 
+  // Extract changed files from diff header lines
+  const changedFiles = Array.from(
+    diff.matchAll(/^diff --git a\/.+ b\/(.+)$/gm),
+    (m) => m[1]
+  ).filter(Boolean) as string[];
+ 
+  const truncatedDiff = diff.slice(0, 6000);
+ 
+  return withRetry(async () => {
+    const result = await genAI.models.generateContent({
+      model: FLASH_MODEL,
+      contents: `Analyze this git diff and respond with ONLY valid JSON, no markdown.
+ 
+  Diff:
+  ${truncatedDiff}
+  
+  Respond with exactly this JSON structure:
+  {
+    "summary": "2-3 sentence technical summary of what changed and why",
+    "commitType": "feat|fix|refactor|docs|test|chore|perf",
+    "impactScore": <integer 1-10 where 10 is most impactful>,
+    "keyChanges": ["change 1", "change 2", "change 3"]
+  }
+  
+  impactScore guide: 1-2=typo/comment, 3-4=minor fix, 5-6=feature addition, 7-8=significant refactor, 9-10=breaking change or major feature`
+    });
+ 
+    const text = result.text?.trim() || "";
+    const cleaned = text.replace(/```json\n?|\n?```/g, "").trim();
+ 
+    try {
+      const parsed = JSON.parse(cleaned);
+      return {
+        summary: parsed.summary || "No summary available",
+        commitType: parsed.commitType || "chore",
+        impactScore: Math.min(10, Math.max(1, parsed.impactScore || 5)),
+        changedFiles,
+      };
+    } catch {
+      // If JSON parse fails, return a safe default
+      return {
+        summary: text.slice(0, 500),
+        commitType: "chore",
+        impactScore: 5,
+        changedFiles,
+      };
+    }
+  });
+}
 
-## **⚠️ Error Handling & Edge Cases**
 
-**Error Management**: [Describe the error handling strategy. Use searchable language: "handles validation errors by...", "catches and logs...", "prevents failures through..."]
-
-**Side Effects**: [List important side effects with context]
-- [e.g., "Makes authenticated API calls to the external payment service"]
-- [e.g., "Writes audit logs to the database for compliance tracking"]
-- [e.g., "Updates global application state that triggers re-renders"]
-
-**Edge Cases Handled**: [Any special cases or boundary conditions this code accounts for]
-
----
-
-## **❓ Common Questions This Answers**
-
-${"" /* CRITICAL for RAG - phrase as actual developer questions */}
-This file helps answer questions like:
-
-- "How does the application [specific capability]?"
-- "What handles [specific responsibility or feature]?"  
-- "Where is [pattern/concept/algorithm] implemented?"
-- "How do I [task this enables]?"
-- "Why does the system [behavior this creates]?"
-
-${"" /* Include 5-8 realistic questions */}
-
----
-
-## **🔍 Technical Keywords**
-[Single line, 15-20 comma-separated terms including: exact function/class names, technical concepts, problem domains, architectural patterns, related synonyms, frameworks, algorithms. This aids both search and embedding.]
-
----
-
-## **📝 Usage Context**
-[2-3 sentences on when/why a developer would need to modify or reference this file. Include common scenarios like "When adding new authentication methods...", "If implementing additional payment providers...", etc.]
-
----
-
-## CRITICAL INSTRUCTIONS FOR QUALITY
-
-**For RAG Optimization**:
-1. Use **varied phrasing** - mention the same concept multiple ways with different words
-2. Write in **natural, flowing language** - not telegraphic bullet points
-3. Include **problem-domain vocabulary** - use terms developers actually search for
-4. Answer implicit questions - structure as if responding to "what", "why", "how", "when"
-5. **Semantic density** - every sentence should add retrievable information
-
-**For Frontend Display**:
-1. Maintain **clear markdown hierarchy** with proper heading levels
-2. Use **emojis** for visual scanning (📋 🎯 🏗️ ⚙️ 🔧 🔌 ⚠️ ❓ 🔍 📝)
-3. Keep **consistent structure** - every summary follows the same format
-4. Make **scannable** - use bold for emphasis, code formatting for names
-5. **No filler text** - every section must contain useful information
-
-**Balance Both**:
-- Write detailed explanations (good for vectors) in structured sections (good for UI)
-- Use descriptive prose (RAG-friendly) with clear headings (render-friendly)
-- Include technical accuracy (useful content) with natural language (better embeddings)
-
-Before responding, verify:
-✓ Each section uses natural, explanatory language (not just lists)
-✓ The summary would match common developer questions
-✓ The markdown structure is clean and consistent
-✓ Technical accuracy is maintained throughout
-✓ Both humans and vector search would find this useful
-  `,
-    ]);
-    return response.response.text();
-  } catch (error) {
-    console.error("Error generating content:", error);
-    return "";
+// ─── Quiz question generation (context-aware) ────────────────
+ 
+export interface QuizQuestion {
+  question: string;
+  answer: string;
+  option1?: string;
+  option2?: string;
+  option3?: string;
+  codeSnippet?: string;
+  explanation: string;
+  conceptTags: string[];
+  difficulty: number;
+  sourceChunkIds: string[];
+}
+ 
+export async function generateContextAwareQuestions(input: {
+  type: "mcq" | "open_ended";
+  amount: number;
+  topic: string;
+  codeContext: string; // assembled from RAG
+  sourceChunkIds: string[];
+  weakConcepts?: string[];
+  difficulty?: number;
+}): Promise<QuizQuestion[]> {
+  await waitForSlot(genState);
+ 
+  const { type, amount, topic, codeContext, weakConcepts, difficulty = 2 } =
+    input;
+ 
+  const weakConceptsNote =
+    weakConcepts && weakConcepts.length > 0
+      ? `\nFocus extra attention on these concepts where the user has shown weakness: ${weakConcepts.slice(0, 5).join(", ")}`
+      : "";
+ 
+  const questionFormat =
+    type === "mcq"
+      ? `{
+  "question": "question text — reference specific function/variable names from the code",
+  "answer": "correct answer (max 15 words)",
+  "option1": "wrong option 1",
+  "option2": "wrong option 2",
+  "option3": "wrong option 3",
+  "codeSnippet": "relevant 3-8 line code excerpt if helpful, else null",
+  "explanation": "why the answer is correct, referencing the code",
+  "conceptTags": ["tag1", "tag2"],
+  "difficulty": ${difficulty}
+}`
+      : `{
+  "question": "open-ended question about the code",
+  "answer": "expected answer (max 20 words)",
+  "codeSnippet": "relevant code excerpt if helpful, else null",
+  "explanation": "detailed explanation of the concept",
+  "conceptTags": ["tag1", "tag2"],
+  "difficulty": ${difficulty}
+}`;
+ 
+  return withRetry(async () => {
+    const result = await genAI.models.generateContent({
+      model: FLASH_MODEL,
+      contents: `You are an expert programming educator creating questions grounded in real code.
+ 
+Topic: ${topic}
+Difficulty: ${difficulty}/5 (1=beginner, 5=expert)${weakConceptsNote}
+ 
+CODEBASE CONTEXT (use this to create grounded questions):
+${codeContext}
+ 
+Generate exactly ${amount} ${type === "mcq" ? "multiple choice" : "open-ended"} questions about this codebase.
+ 
+Rules:
+- Questions MUST reference actual functions, components, patterns, or logic from the provided code context
+- Do not make up code that isn't in the context
+- MCQ wrong options should be plausible but clearly incorrect when you understand the code
+- conceptTags should be 2-4 short strings like ["React hooks", "useState", "side effects"]
+- difficulty must be ${difficulty}
+ 
+Respond with ONLY a JSON array, no markdown:
+[${questionFormat}, ...]`
+    });
+ 
+    const text = result.text?.trim() || "";
+    const cleaned = text.replace(/```json\n?|\n?```/g, "").trim();
+ 
+    const parsed = JSON.parse(cleaned);
+    const questions: QuizQuestion[] = Array.isArray(parsed) ? parsed : [parsed];
+ 
+    return questions.map((q) => ({
+      ...q,
+      sourceChunkIds: input.sourceChunkIds,
+      difficulty: input.difficulty ?? 2,
+      conceptTags: Array.isArray(q.conceptTags) ? q.conceptTags : [],
+      explanation: q.explanation || "",
+    }));
+  });
+}
+ 
+// ─── Semantic answer scoring (replaces string-similarity) ────
+ 
+export async function scoreAnswerSemantically(
+  correctAnswer: string,
+  userAnswer: string
+): Promise<number> {
+  if (!userAnswer.trim()) return 0;
+ 
+  const [correctEmb, userEmb] = await Promise.all([
+    generateEmbedding(correctAnswer),
+    generateEmbedding(userAnswer),
+  ]);
+ 
+  return cosineSimilarity(correctEmb, userEmb);
+}
+ 
+function cosineSimilarity(a: number[], b: number[]): number {
+  if (a.length !== b.length) return 0;
+  let dot = 0,
+    normA = 0,
+    normB = 0;
+  for (let i = 0; i < a.length; i++) {
+    dot += a[i]! * b[i]!;
+    normA += a[i]! * a[i]!;
+    normB += b[i]! * b[i]!;
+  }
+  const denom = Math.sqrt(normA) * Math.sqrt(normB);
+  return denom === 0 ? 0 : Math.max(0, Math.min(1, dot / denom));
+}
+ 
+// ─── RAG answer generation ────────────────────────────────────
+ 
+export async function generateRagAnswer(
+  question: string,
+  context: string,
+  onChunk?: (text: string) => void
+): Promise<string> {
+  await waitForSlot(genState);
+ 
+  const prompt = `You are GitWhiz, an AI code assistant. Answer the developer's question using ONLY the provided codebase context. Be precise and reference actual file names, function names, and line patterns from the context.
+ 
+If the answer is not in the context, say "I couldn't find relevant code for this in the indexed files."
+ 
+CODEBASE CONTEXT:
+${context}
+ 
+QUESTION: ${question}
+ 
+Provide a clear, structured answer with:
+1. Direct answer to the question
+2. Relevant code references (file paths and function names)
+3. How the pieces connect
+ 
+Use markdown formatting.`;
+ 
+  if (onChunk) {
+    // Streaming mode
+    return withRetry(async () => {
+      const result = await genAI.models.generateContentStream({
+        model: FLASH_MODEL,
+        contents: prompt
+      });
+      let fullText = "";
+      for await (const chunk of result) {
+        const text = chunk.text || "";
+        fullText += text;
+        onChunk(text);
+      }
+      return fullText;
+    });
+  } else {
+    return withRetry(async () => {
+      const result = await genAI.models.generateContent({
+        model: FLASH_MODEL,
+        contents: prompt
+      });
+      return result.text || "";
+    });
   }
 }
 
-export async function generateEmbedding(summary: string): Promise<number[]> {
-  const response = await genAINew.models.embedContent({
-    model: "gemini-embedding-001",
-    contents: summary,
-    config: {
-      taskType: "RETRIEVAL_DOCUMENT",
-      outputDimensionality: 768, // matches your vector(768) schema
-    },
-  });
 
-  return response.embeddings![0].values!;
-}
+
