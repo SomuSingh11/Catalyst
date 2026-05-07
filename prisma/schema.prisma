@@ -117,7 +117,26 @@ enum JobStatus {
 
 
 // ============================================================
-// CODE CHUNKS — entity-level
+// CODE CHUNKS
+//
+// Split-table design:
+//
+//   CodeChunk        — all metadata, full-text search, NO vector columns
+//   ChunkEmbedding384  — vector(384)  for MiniLM / bge-small
+//   ChunkEmbedding768  — vector(768)  for Gemini / mpnet / bge-base
+//   ChunkEmbedding1536 — vector(1536) for OpenAI text-embedding-3-small
+//   ChunkEmbedding3072 — vector(3072) for OpenAI text-embedding-3-large
+//
+// Why:
+//   Postgres requires a fixed dimension in the DDL (vector(N)).
+//   Storing vectors in dimension-specific tables lets us:
+//     • Switch models without ALTER-ing existing data
+//     • Keep HNSW indexes valid across model switches
+//     • Add new dimensions by adding a table — no migration of old data
+//
+// At any given time only ONE embedding table is active (the one that
+// matches EMBEDDING_MODE + model). The retriever selects the right
+// table via getEmbeddingTable(activeDim()).
 // ============================================================
 
 model CodeChunk {
@@ -146,16 +165,21 @@ model CodeChunk {
   tokenCount  Int?
   linesOfCode Int?
 
-  // Two embeddings per chunk:
-  // codeEmbedding -> embed rawCode (finds exact implementation)
-  // contextEmbedding -> embed signature+docstring+filePath (finds by intent)
-  codeEmbedding     Unsupported("vector(768)")?
-  contextEmbedding  Unsupported("vector(768)")?
+  // ── Embedding provenance ──────────────────────────────────
+  // Stored at index time. Verified at query time.
+  embeddingModel String?   
+  embeddingDim   Int?     
 
   // Full-text search vector (pg_trgm + tsvector)
   searchVector  Unsupported("tsvector")?
 
   createdAt      DateTime  @default(now())
+
+  // Relations to dimension-specific embedding tables
+  embedding384  ChunkEmbedding384?
+  embedding768  ChunkEmbedding768?
+  embedding1536 ChunkEmbedding1536?
+  embedding3072 ChunkEmbedding3072?
 
   project       WhizProject @relation(fields: [projectId], references: [id], onDelete: Cascade)
 
@@ -164,6 +188,60 @@ model CodeChunk {
   @@index([projectId, chunkType])
   @@index([projectId, entityName])
   @@index([searchVector], type: Gin)
+  @@index([projectId, embeddingModel])
+}
+
+
+// ── 384-dim embedding table ───────────────────────────────────
+// Models: Xenova/all-MiniLM-L6-v2, Xenova/bge-small-en-v1.5
+// Xenova/paraphrase-multilingual-MiniLM-L12-v2
+
+model ChunkEmbedding384 {
+  chunkId  String @id
+
+  // codeEmbedding    → embed(rawCode)       — finds exact implementation
+  // contextEmbedding → embed(sig+doc+path)  — finds by developer intent
+  codeEmbedding    Unsupported("vector(384)")?
+  contextEmbedding Unsupported("vector(384)")?
+
+  chunk CodeChunk @relation(fields: [chunkId], references: [id], onDelete: Cascade)
+}
+
+// ── 768-dim embedding table ───────────────────────────────────
+// Models: gemini/text-embedding-004, Xenova/all-mpnet-base-v2
+//         Xenova/bge-base-en-v1.5
+
+model ChunkEmbedding768 {
+  chunkId String @id
+
+  codeEmbedding    Unsupported("vector(768)")?
+  contextEmbedding Unsupported("vector(768)")?
+
+  chunk CodeChunk @relation(fields: [chunkId], references: [id], onDelete: Cascade)
+}
+
+// ── 1536-dim embedding table ──────────────────────────────────
+// Models: openai/text-embedding-3-small, openai/text-embedding-ada-002
+
+model ChunkEmbedding1536 {
+  chunkId String @id
+
+  codeEmbedding    Unsupported("vector(1536)")?
+  contextEmbedding Unsupported("vector(1536)")?
+
+  chunk CodeChunk @relation(fields: [chunkId], references: [id], onDelete: Cascade)
+}
+
+// ── 3072-dim embedding table ──────────────────────────────────
+// Models: openai/text-embedding-3-large
+
+model ChunkEmbedding3072 {
+  chunkId String @id
+
+  codeEmbedding    Unsupported("vector(3072)")?
+  contextEmbedding Unsupported("vector(3072)")?
+
+  chunk CodeChunk @relation(fields: [chunkId], references: [id], onDelete: Cascade)
 }
 
 enum ChunkType {
