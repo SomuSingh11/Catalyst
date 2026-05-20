@@ -49,7 +49,7 @@ export type FileTree = {
 };
 
 // Tracking status of Project indexing process
-export interface IndexingProgress {
+export interface IndexingProgressFn {
   status:
     | "initialising"
     | "cloning"
@@ -59,13 +59,23 @@ export interface IndexingProgress {
     | "pending"
     | "idle"
     | "connected"
-    | "error";
+    | "error"
+    | "parsing"
+    | "chunking"
+    | "summarizing"
+    | "storing"
+    | "embedding"
+    | "indexing"
+    | "done"
+    | "failed";
   message: string;
   current?: number;
   total?: number;
   currentFile?: string;
   percentage?: number;
   error?: string;
+  totalChunks?: number;
+  doneChunks?: number;
   stats?: {
     totalFiles: number;
     embeddingsGenerated: number;

@@ -6,7 +6,7 @@ import simpleGit from "simple-git";
 import { rimraf } from "rimraf";
 import { generateEmbedding, summariseCode } from "../services/gemini";
 import prisma from "@/lib/db";
-import { IndexingProgress } from "@/types/gitWhiz";
+import { IndexingProgressFn } from "@/types/gitWhiz";
 
 // --- A simple delay helper ---
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
@@ -146,7 +146,7 @@ const isCodeFile = (fileName: string): boolean => {
 // --- Step 1: Clone repo and load files from local disk ---
 const loadRepoFilesLocally = async (
   githubUrl: string,
-  onProgress: (progress: IndexingProgress) => void,
+  onProgress: (progress: IndexingProgressFn) => void,
 ): Promise<Document[]> => {
   const tempDir = await fs.mkdtemp(path.join(process.cwd(), "temp-repo-"));
   console.log(`Cloning ${githubUrl} into ${tempDir}...`);
